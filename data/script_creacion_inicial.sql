@@ -6,11 +6,11 @@ GO
 BEGIN 
 	CREATE TABLE [ALTA_DATA].[PC] (
 	  [id_pc] NVARCHAR PRIMARY KEY,
-	  [id_disco_rigido] NVARCHAR,
-	  [id_memoria_ram] NVARCHAR,
-	  [id_microprocesador] NVARCHAR,
-	  [id_placa_video] INTEGER,
-	  [id_motherboard] INTEGER,
+	  [id_disco_rigido] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[Disco_Rigido](id_disco_rigido),
+	  [id_memoria_ram] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[Memoria_Ram](id_memoria_ram),
+	  [id_microprocesador] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[Microprocesador](id_microprocesador),
+	  [id_placa_video] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Placa_Video](id_placa_video),
+	  [id_motherboard] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Motherboard](id_motherboard),
 	  [pc_alto] DECIMAL,
 	  [pc_ancho] DECIMAL,
 	  [pc_profundidad] DECIMAL
@@ -85,7 +85,7 @@ BEGIN
 	);
 
 	CREATE TABLE [ALTA_DATA].[Disco_Rigido] (
-	  [id_disco_rigido] NVARCHAR,
+	  [id_disco_rigido] NVARCHAR PRIMARY KEY,
 	  [dr_tipo] NVARCHAR,
 	  [dr_capacidad] NVARCHAR,
 	  [dr_fabricante] NVARCHAR,
