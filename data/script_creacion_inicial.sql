@@ -19,7 +19,7 @@ BEGIN
 	CREATE TABLE [ALTA_DATA].[Microprocesador] (
 	  [id_microprocesador] NVARCHAR(50) PRIMARY KEY,
 	  [mic_cache] NVARCHAR(50),
-	  [mic_hilos] DECIMAL,
+	  [mic_hilos] DECIMAL(18,0),
 	  [mic_velocidad] NVARCHAR(50),
 	  [mic_fabricante] NVARCHAR(255)
 	);
@@ -54,18 +54,18 @@ BEGIN
 	  [id_microprocesador] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[Microprocesador](id_microprocesador),
 	  [id_placa_video] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Placa_Video](id_placa_video),
 	  [id_motherboard] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Motherboard](id_motherboard),
-	  [pc_alto] DECIMAL,
-	  [pc_ancho] DECIMAL,
-	  [pc_profundidad] DECIMAL
+	  [pc_alto] DECIMAL(18,2),
+	  [pc_ancho] DECIMAL(18,2),
+	  [pc_profundidad] DECIMAL(18,2)
 	);
 
 -- Accesorios
 
 	
 	CREATE TABLE [ALTA_DATA].[Accesorios] (
-	  [id_accesorio] DECIMAL PRIMARY KEY,
+	  [id_accesorio] DECIMAL(18,0) PRIMARY KEY,
 	  [acc_descripcion] NVARCHAR(255),
-	  [acc_fabricante] NVARCHAR
+	  [acc_fabricante] NVARCHAR(255)
 	);
 
 -- Sucursales
@@ -80,7 +80,7 @@ BEGIN
 	  [id_ciudad] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Ciudad](id_ciudad),
 	  [suc_direccion] NVARCHAR(255),
 	  [suc_mail] NVARCHAR(255),
-	  [suc_telefono] DECIMAL
+	  [suc_telefono] DECIMAL(18,0)
 	);
 
 
@@ -88,7 +88,7 @@ BEGIN
 	  [id_stock] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
 	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
-	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
+	  [id_accesorio] DECIMAL(18,0) FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [stock_cantidad] INTEGER
 	);
 
@@ -97,7 +97,7 @@ BEGIN
 	  [cli_apellido] NVARCHAR(255),
 	  [cli_nombre] NVARCHAR(255),
 	  [cli_direccion] NVARCHAR(255),
-	  [cli_dni] DECIMAL,
+	  [cli_dni] DECIMAL(18,0),
 	  [cli_fecha_nacimiento] DATETIME2,
 	  [cli_mail] NVARCHAR(255),
 	  [cli_telefono] INT,
@@ -111,7 +111,7 @@ BEGIN
 	  [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal) ,
 	  [com_fecha] DATETIME2,
-	  [com_total] DECIMAL
+	  [com_total] DECIMAL(18,2)
 	);
 
 
@@ -119,9 +119,9 @@ BEGIN
 	  [id_itemc] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_compra] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Compra](id_compra),
 	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
-	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
+	  [id_accesorio] DECIMAL(18,0) FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [itemc_cantidad] INTEGER,
-	  [itemc_precio] DECIMAL
+	  [itemc_precio] DECIMAL(18,2)
 	);
 
 
@@ -129,20 +129,20 @@ BEGIN
 
 
 	CREATE TABLE [ALTA_DATA].[Factura] (
-	  [id_factura] DECIMAL IDENTITY PRIMARY KEY,
+	  [id_factura] DECIMAL(18,0) IDENTITY PRIMARY KEY,
 	  [id_cliente] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Cliente](id_cliente),
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
 	  [fac_fecha] DATETIME2,
-	  [fact_total] DECIMAL
+	  [fact_total] DECIMAL(18,2)
 	);
 	
 	CREATE TABLE [ALTA_DATA].[Item_factura] (
 	  [id_itemf] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_factura] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Factura](id_factura),
+	  [id_factura] DECIMAL(18,0) FOREIGN KEY REFERENCES [ALTA_DATA].[Factura](id_factura),
 	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
-	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
+	  [id_accesorio] DECIMAL(18,0) FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [itemf_cantidad] INTEGER,
-	  [itemf_precio] DECIMAL
+	  [itemf_precio] DECIMAL(18,2)
 	);
 END
 	
@@ -328,11 +328,6 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 			*/
 	END;
 
-
-
-
-
-
 -- Accesorios
 /*
 No hay datos del fabricante de los accesorios por lo que se setea en NULL por ahora
@@ -367,61 +362,325 @@ No hay datos del fabricante de los accesorios por lo que se setea en NULL por ah
 
 
 -- Sucursal
+/*
+Las sucursales no tienen un id, por lo que dejamos que se genere automaticamente
+*/
 	BEGIN
-	INSERT INTO [ALTA_DATA].[Sucursal] (
-	   [id_ciudad]
-	  ,[suc_direccion]
-	  ,[suc_mail]
-	  ,[suc_telefono]
-	)
-	SELECT DISTINCT
-		 id_ciudad
-		,m.SUCURSAL_DIR
-		,m.SUCURSAL_MAIL
-		,m.SUCURSAL_TEL
-	FROM [gd_esquema].[Maestra] m
-	LEFT JOIN [ALTA_DATA].[Ciudad]
-		ON
-			ciu_nombre = m.CIUDAD
-	WHERE
-		m.SUCURSAL_DIR IS NOT NULL
-		OR m.SUCURSAL_MAIL IS NOT NULL
-		OR m.SUCURSAL_TEL IS NOT NULL
+		INSERT INTO [ALTA_DATA].[Sucursal] (
+		   [id_ciudad]
+		  ,[suc_direccion]
+		  ,[suc_mail]
+		  ,[suc_telefono]
+		)
+		SELECT DISTINCT
+			 id_ciudad
+			,m.SUCURSAL_DIR
+			,m.SUCURSAL_MAIL
+			,m.SUCURSAL_TEL
+		FROM [gd_esquema].[Maestra] m
+		LEFT JOIN [ALTA_DATA].[Ciudad]
+			ON
+				ciu_nombre = m.CIUDAD
+		WHERE
+			m.SUCURSAL_DIR IS NOT NULL
+			OR m.SUCURSAL_MAIL IS NOT NULL
+			OR m.SUCURSAL_TEL IS NOT NULL;
 		
+
+		/* Queries de verificacion */
+		/*
+		SELECT DISTINCT
+			 id_ciudad
+			,m.SUCURSAL_DIR
+			,m.SUCURSAL_MAIL
+			,m.SUCURSAL_TEL
+		FROM [gd_esquema].[Maestra] m
+		LEFT JOIN (
+			SELECT DISTINCT
+				ROW_NUMBER() OVER(ORDER BY m.CIUDAD) id_ciudad
+				,m.CIUDAD nombre
+			FROM [gd_esquema].[Maestra] m
+			WHERE 
+				m.CIUDAD IS NOT NULL
+			GROUP BY 
+				m.CIUDAD
+			) ciu
+			ON
+				ciu.nombre = m.CIUDAD
+		WHERE
+			m.SUCURSAL_DIR IS NOT NULL
+			OR m.SUCURSAL_MAIL IS NOT NULL
+			OR m.SUCURSAL_TEL IS NOT NULL
+		ORDER BY 1
+
+		*/
 
 
 	END;
 
-	CREATE TABLE [ALTA_DATA].[Stock] (
-	  [id_stock] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
-	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
-	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
-	  [stock_cantidad] INTEGER
-	);
-
-	CREATE TABLE [ALTA_DATA].[Cliente] (
-	  [id_cliente] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [cli_apellido] NVARCHAR(255),
-	  [cli_nombre] NVARCHAR(255),
-	  [cli_direccion] NVARCHAR(255),
-	  [cli_dni] DECIMAL,
-	  [cli_fecha_nacimiento] DATETIME2,
-	  [cli_mail] NVARCHAR(255),
-	  [cli_telefono] INT,
-	  [cli_sexo] CHAR NULL
-	);
 
 
 
+-- Cliente
+/*
+No hay datos sobre el sexo de los clientes por lo que por ahora se setea en NULL
+Dado que no hay un id de cliente vamos a tomar por valido cualquier cliente que tenga al menos un campo que no sea NULL
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Cliente] (
+		   [cli_apellido]
+		  ,[cli_nombre]
+		  ,[cli_direccion]
+		  ,[cli_dni]
+		  ,[cli_fecha_nacimiento]
+		  ,[cli_mail]
+		  ,[cli_telefono] 
+		  ,[cli_sexo]
+		)
+		SELECT DISTINCT
+			 m.CLIENTE_APELLIDO
+			,m.CLIENTE_NOMBRE
+			,m.CLIENTE_DIRECCION
+			,m.CLIENTE_DNI
+			,m.CLIENTE_FECHA_NACIMIENTO
+			,m.CLIENTE_MAIL
+			,m.CLIENTE_TELEFONO
+			,NULL
+
+		FROM [gd_esquema].[Maestra] m
+		WHERE 
+			m.CLIENTE_APELLIDO IS NOT NULL
+			OR m.CLIENTE_NOMBRE IS NOT NULL
+			OR m.CLIENTE_DIRECCION IS NOT NULL
+			OR m.CLIENTE_DNI IS NOT NULL
+			OR m.CLIENTE_FECHA_NACIMIENTO IS NOT NULL
+			OR m.CLIENTE_MAIL IS NOT NULL
+			OR m.CLIENTE_TELEFONO IS NOT NULL;
+	END;
 
 
+-- Compra
+/* 
+Para poder mantener el identity en el campo id (Y que sea autonumerico al insertar) y a la vez poder conservar los ids de la tabla maestra
+es necesario permitir insertar identity en la tabla. Luego se deshabilita para impedir que se ingresen IDs invalidos durante el funcionamiento normal
+*/
+	BEGIN
+		SET IDENTITY_INSERT [ALTA_DATA].[Compra] ON;
+		INSERT INTO [ALTA_DATA].[Compra] (
+		   [id_compra]
+		  ,[id_sucursal]
+		  ,[com_fecha] 
+		  ,[com_total] 
+		)
+		SELECT DISTINCT
+			 m.COMPRA_NUMERO
+			,id_sucursal
+			,m.COMPRA_FECHA
+			,SUM(COMPRA_PRECIO)
+
+		FROM [gd_esquema].[Maestra] m
+		LEFT JOIN [ALTA_DATA].[Sucursal]
+			ON
+				suc_direccion = m.SUCURSAL_DIR
+				AND suc_mail = m.SUCURSAL_MAIL
+				AND suc_telefono = m.SUCURSAL_TEL
+		WHERE 
+			m.COMPRA_NUMERO IS NOT NULL
+		GROUP BY 
+			 m.COMPRA_NUMERO
+			,id_sucursal
+			,m.COMPRA_FECHA;
+		SET IDENTITY_INSERT [ALTA_DATA].[Compra] OFF;
+		/* Query de prueba */
+		/*
+		SELECT DISTINCT
+			 m.COMPRA_NUMERO
+			,m.COMPRA_FECHA
+			,SUM(COMPRA_PRECIO)
+
+		FROM [gd_esquema].[Maestra] m
+		WHERE 
+			m.COMPRA_NUMERO IS NOT NULL
+		GROUP BY 
+			 m.COMPRA_NUMERO
+			,m.COMPRA_FECHA;
+		*/
+
+	END;
+		
 
 
+-- Item_compra		
+/*
+Al no haber un id para cada item de una compra se deja que el identity genere uno automaticamente
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Item_compra] (
+		   [id_compra]
+		  ,[id_pc] 
+		  ,[id_accesorio] 
+		  ,[itemc_cantidad]
+		  ,[itemc_precio]
+		)
+		SELECT DISTINCT
+			 m.COMPRA_NUMERO
+			,m.PC_CODIGO
+			,m.ACCESORIO_CODIGO
+			,m.COMPRA_CANTIDAD
+			,m.COMPRA_PRECIO
+
+		FROM [gd_esquema].[Maestra] m
+		WHERE COMPRA_NUMERO IS NOT NULL
+	END;
+
+-- Facturas
+/*
+Idem caso de los ids con la tabla de Compra
+Dado que los precios de venta son calculados en base a los precios de compra de cada producto. Por ahora se deja en NULL el precio total de la factura
+*/
+	BEGIN
+		SET IDENTITY_INSERT [ALTA_DATA].[Factura] ON;
+		INSERT INTO [ALTA_DATA].[Factura] (
+		   [id_factura]
+		  ,[id_cliente]
+		  ,[id_sucursal]
+		  ,[fac_fecha]
+		  ,[fact_total]
+		)
+		SELECT DISTINCT
+			 m.FACTURA_NUMERO
+			,id_cliente
+			,id_sucursal
+			,m.FACTURA_FECHA
+			,NULL
+		FROM [gd_esquema].[Maestra] m
+		LEFT JOIN [ALTA_DATA].[Cliente]
+			ON
+				m.CLIENTE_APELLIDO = cli_apellido
+				AND m.CLIENTE_NOMBRE = cli_nombre
+				AND m.CLIENTE_DIRECCION = cli_direccion
+				AND m.CLIENTE_DNI = cli_dni
+				AND m.CLIENTE_FECHA_NACIMIENTO = cli_fecha_nacimiento
+				AND m.CLIENTE_MAIL = cli_mail
+				AND m.CLIENTE_TELEFONO = cli_telefono
+		LEFT JOIN [ALTA_DATA].[Sucursal]
+			ON
+				m.SUCURSAL_DIR = suc_direccion
+				AND m.SUCURSAL_MAIL = suc_mail
+				AND m.SUCURSAL_TEL = suc_telefono
+		WHERE
+			m.FACTURA_NUMERO IS NOT NULL;
+		SET IDENTITY_INSERT [ALTA_DATA].[Factura] OFF;
+	END;
+	
+-- Item_factura
+/*
+Al no haber un id para cada item vendido en una factura se deja que el IDENTITY lo genere automaticamente
+Como no se especifica la cantidad de items vendidos se asume que se vende una sola unidad de cada producto
+Los precios se calculan como el promedio del precio de compra del producto mas el 20%
+*/
+	BEGIN
+	INSERT INTO [ALTA_DATA].[Item_factura] (
+	   [id_factura]
+	  ,[id_pc] 
+	  ,[id_accesorio] 
+	  ,[itemf_cantidad]
+	  ,[itemf_precio]
+	)
+	SELECT DISTINCT
+		 m.FACTURA_NUMERO
+		,m.PC_CODIGO
+		,m.ACCESORIO_CODIGO
+		,1
+		,(
+			SELECT TOP 1
+				AVG(itc.itemc_precio)*1.2
+			FROM [ALTA_DATA].[Item_compra] itc
+			WHERE 
+				itc.id_accesorio = m.ACCESORIO_CODIGO
+				OR itc.id_pc = m.PC_CODIGO
+			GROUP BY
+				 itc.id_pc
+				,itc.id_accesorio
+		)
+
+	FROM [gd_esquema].[Maestra] m
+	WHERE
+		m.FACTURA_NUMERO IS NOT NULL
+
+		/* Queries de prueba */
+		/*
+		select 
+			 id_accesorio
+			,id_pc
+			,avg(itemc_precio)*1.2
+		from ALTA_DATA.Item_compra
+		group by
+			id_accesorio
+			,id_pc
+		*/
+	END;
+
+-- Actualizacion total factura
+/*
+Se actualizan los precios totales de cada factura segun la suma de los items vendidos en esa factura
+*/
+	BEGIN
+		UPDATE [ALTA_DATA].[Factura]
+		SET	fact_total = itf.total
+		FROM [ALTA_DATA].[Factura] f
+		JOIN (
+			SELECT
+				id_factura id_factura
+				,SUM(itemf_cantidad * itemf_precio) total
+			FROM [ALTA_DATA].[Item_factura]
+			GROUP BY
+				id_factura
+			) itf
+		ON
+			itf.id_factura = f.id_factura
+	END;
 
 
+-- Stock
+/* 
+El Stock se hace al final porque tenemos que calcular el stock actual en base a todas las compras y ventas que se hicieron 
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Stock] (
+		   [id_sucursal]
+		  ,[id_pc]
+		  ,[id_accesorio]
+		  ,[stock_cantidad]
+		)
+		SELECT
+			 f.id_sucursal
+			,itf.id_pc
+			,itf.id_accesorio
+			,(SELECT TOP 1
+					SUM(itc.itemc_cantidad)
+				FROM [ALTA_DATA].[Item_compra] itc, [ALTA_DATA].[Compra] c
+				WHERE
+					c.id_sucursal = f.id_sucursal
+					AND c.id_compra = itc.id_compra
+					AND (itc.id_pc = itf.id_pc 
+					OR itc.id_accesorio = itf.id_accesorio)
+				GROUP BY
+					c.id_sucursal
+					,itc.id_pc
+					,itc.id_accesorio
+				) - SUM(itf.itemf_cantidad)
 
+		FROM [ALTA_DATA].[Item_factura] itf
+		JOIN [ALTA_DATA].[Factura] f
+			ON f.id_factura = itf.id_factura
 
+		GROUP BY
+			f.id_sucursal,
+			itf.id_pc,
+			itf.id_accesorio;
+	END;
+	
 
 END;
 GO
@@ -442,7 +701,7 @@ DROP TABLE [ALTA_DATA].[Sucursal];
 DROP TABLE [ALTA_DATA].[Ciudad];
 DROP TABLE [ALTA_DATA].[Accesorios];
 DROP TABLE [ALTA_DATA].[PC];
-DROP TABLE  [ALTA_DATA].[Memoria_Ram];
+DROP TABLE [ALTA_DATA].[Memoria_Ram];
 DROP TABLE [ALTA_DATA].[Microprocesador];
 DROP TABLE [ALTA_DATA].[Disco_Rigido];
 DROP TABLE [ALTA_DATA].[Motherboard];
