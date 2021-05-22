@@ -26,9 +26,9 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[Item_factura] (
 	  [id_itemf] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_factura] INTEGER,
-	  [id_pc] INTEGER,
-	  [id_accesorio] INTEGER,
+	  [id_factura] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Factura](id_factura),
+	  [id_pc] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
+	  [id_accesorio] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [itemf_cantidad] INTEGER,
 	  [itemf_precio] DECIMAL
 	);
@@ -43,16 +43,16 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[Compra] (
 	  [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_sucursal] INTEGER,
+	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal) ,
 	  [com_fecha] DATETIME2,
 	  [com_total] DECIMAL
 	);
 
 	CREATE TABLE [ALTA_DATA].[Item_compra] (
 	  [id_itemc] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_compra] INTEGER,
-	  [id_pc] NVARCHAR,
-	  [id_accesorio] DECIMAL,
+	  [id_compra] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Compra](id_compra),
+	  [id_pc] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
+	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [itemc_cantidad] INTEGER,
 	  [itemc_precio] DECIMAL
 	);
@@ -72,14 +72,14 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[Stock] (
 	  [id_stock] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [id_sucursal] INTEGER,
-	  [id_pc (fk)] NVARCHAR,
-	  [id_accesorio] DECIMAL,
+	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
+	  [id_pc (fk)] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
+	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
 	  [stock_cantidad] INTEGER
 	);
 
 	CREATE TABLE [ALTA_DATA].[Accesorios] (
-	  [id_accesorio] DECIMAL,
+	  [id_accesorio] DECIMAL PRIMARY KEY,
 	  [acc_descripcion] NVARCHAR,
 	  [acc_fabricante] NVARCHAR
 	);
@@ -120,8 +120,8 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[Factura] (
 	  [id_factura] DECIMAL IDENTITY PRIMARY KEY,
-	  [id_cliente] INTEGER,
-	  [id_sucursal] INTEGER,
+	  [id_cliente] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Cliente](id_cliente),
+	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
 	  [fac_fecha] DATETIME2,
 	  [fact_total] DECIMAL
 	);
