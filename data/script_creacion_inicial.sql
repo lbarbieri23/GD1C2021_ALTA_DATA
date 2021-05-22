@@ -154,6 +154,7 @@ END
 -- Memoria RAM
 GO
 BEGIN
+-- Memoria RAM
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Memoria_Ram](
 			 [id_memoria_ram]
@@ -240,12 +241,10 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
 				OR PLACA_VIDEO_MODELO IS NOT NULL
 				OR PLACA_VIDEO_VELOCIDAD IS NOT NULL;
 	END;
-
 -- PC
 /*
 No hay datos de las motherboards asi que por ahora va a quedar en NULL este campo
 */
-
 	BEGIN
 		INSERT INTO [ALTA_DATA].[PC] (
 			   [id_pc]
@@ -279,58 +278,139 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 				AND m.PLACA_VIDEO_VELOCIDAD = pv_velocidad
 		WHERE m.PC_CODIGO IS NOT NULL;
 
+
+		/* Queries verificacion PCs
+			SELECT DISTINCT
+				 m.PC_CODIGO
+				,m.DISCO_RIGIDO_CODIGO
+				,m.MEMORIA_RAM_CODIGO
+				,m.MICROPROCESADOR_CODIGO
+				,id_placa_video
+				,NULL 
+				,m.PC_ALTO
+				,m.PC_ANCHO
+				,m.PC_PROFUNDIDAD
+			FROM [gd_esquema].[Maestra] m
+
+			-- La tabla de placa_video esta como una subquery
+			LEFT JOIN ( 
+				SELECT DISTINCT
+					ROW_NUMBER() OVER(ORDER BY m.PLACA_VIDEO_CHIPSET) id_placa_video -- Genero un id al vuelo con ROW_NUMBER
+					,m.PLACA_VIDEO_CAPACIDAD pv_capacidad
+					,m.PLACA_VIDEO_CHIPSET pv_chipset
+					,m.PLACA_VIDEO_FABRICANTE pv_fabricante
+					,m.PLACA_VIDEO_MODELO pv_modelo
+					,m.PLACA_VIDEO_VELOCIDAD pv_velocidad
+				FROM [gd_esquema].[Maestra] m
+					WHERE m.PLACA_VIDEO_CAPACIDAD IS NOT NULL
+						OR m.PLACA_VIDEO_CHIPSET IS NOT NULL
+						OR PLACA_VIDEO_FABRICANTE IS NOT NULL
+						OR PLACA_VIDEO_MODELO IS NOT NULL
+						OR PLACA_VIDEO_VELOCIDAD IS NOT NULL
+				GROUP BY m.PLACA_VIDEO_CAPACIDAD -- El group by es para que el row_number no me cree un id para cada fila que tiene placa de video en la tabla maestra
+											,m.PLACA_VIDEO_CHIPSET 
+											,m.PLACA_VIDEO_FABRICANTE 
+											,m.PLACA_VIDEO_MODELO 
+											,m.PLACA_VIDEO_VELOCIDAD
+				) pv
+					ON
+					m.PLACA_VIDEO_CAPACIDAD = pv_capacidad
+					AND m.PLACA_VIDEO_CHIPSET = pv_chipset
+					AND PLACA_VIDEO_FABRICANTE = pv_fabricante
+					AND PLACA_VIDEO_MODELO = pv_modelo
+					AND PLACA_VIDEO_VELOCIDAD = pv_velocidad
+			WHERE PC_CODIGO IS NOT NULL
+
+
+			select distinct pc_codigo
+			from gd_esquema.Maestra
+			where pc_codigo is not null
+			*/
 	END;
 
-/* Queries verificacion PCs
-SELECT DISTINCT
-	 m.PC_CODIGO
-	,m.DISCO_RIGIDO_CODIGO
-	,m.MEMORIA_RAM_CODIGO
-	,m.MICROPROCESADOR_CODIGO
-	,id_placa_video
-	,NULL 
-	,m.PC_ALTO
-	,m.PC_ANCHO
-	,m.PC_PROFUNDIDAD
-FROM [gd_esquema].[Maestra] m
-
--- La tabla de placa_video esta como una subquery
-LEFT JOIN ( 
-	SELECT DISTINCT
-		ROW_NUMBER() OVER(ORDER BY m.PLACA_VIDEO_CHIPSET) id_placa_video -- Genero un id al vuelo con ROW_NUMBER
-		,m.PLACA_VIDEO_CAPACIDAD pv_capacidad
-		,m.PLACA_VIDEO_CHIPSET pv_chipset
-		,m.PLACA_VIDEO_FABRICANTE pv_fabricante
-		,m.PLACA_VIDEO_MODELO pv_modelo
-		,m.PLACA_VIDEO_VELOCIDAD pv_velocidad
-	FROM [gd_esquema].[Maestra] m
-		WHERE m.PLACA_VIDEO_CAPACIDAD IS NOT NULL
-			OR m.PLACA_VIDEO_CHIPSET IS NOT NULL
-			OR PLACA_VIDEO_FABRICANTE IS NOT NULL
-			OR PLACA_VIDEO_MODELO IS NOT NULL
-			OR PLACA_VIDEO_VELOCIDAD IS NOT NULL
-	GROUP BY m.PLACA_VIDEO_CAPACIDAD -- El group by es para que el row_number no me cree un id para cada fila que tiene placa de video en la tabla maestra
-								,m.PLACA_VIDEO_CHIPSET 
-								,m.PLACA_VIDEO_FABRICANTE 
-								,m.PLACA_VIDEO_MODELO 
-								,m.PLACA_VIDEO_VELOCIDAD
-	) pv
-		ON
-		m.PLACA_VIDEO_CAPACIDAD = pv_capacidad
-		AND m.PLACA_VIDEO_CHIPSET = pv_chipset
-		AND PLACA_VIDEO_FABRICANTE = pv_fabricante
-		AND PLACA_VIDEO_MODELO = pv_modelo
-		AND PLACA_VIDEO_VELOCIDAD = pv_velocidad
-WHERE PC_CODIGO IS NOT NULL
 
 
-select distinct pc_codigo
-from gd_esquema.Maestra
-where pc_codigo is not null
+
+
+
+-- Accesorios
+/*
+No hay datos del fabricante de los accesorios por lo que se setea en NULL por ahora
 */
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Accesorios] (
+			   [id_accesorio]
+			  ,[acc_descripcion]
+			  ,[acc_fabricante]
+			)
+		SELECT DISTINCT
+			 m.ACCESORIO_CODIGO
+			,m.AC_DESCRIPCION
+			,NULL
+		FROM [gd_esquema].[Maestra] m
+		WHERE
+			m.ACCESORIO_CODIGO IS NOT NULL;
+	END;
 
 
+-- Ciudad
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Ciudad] (
+		  [ciu_nombre]
+		)
+		SELECT DISTINCT
+			m.CIUDAD
+		FROM [gd_esquema].[Maestra] m
+		WHERE 
+			m.CIUDAD IS NOT NULL;
+	END;
 
+
+-- Sucursal
+	BEGIN
+	INSERT INTO [ALTA_DATA].[Sucursal] (
+	   [id_ciudad]
+	  ,[suc_direccion]
+	  ,[suc_mail]
+	  ,[suc_telefono]
+	)
+	SELECT DISTINCT
+		 id_ciudad
+		,m.SUCURSAL_DIR
+		,m.SUCURSAL_MAIL
+		,m.SUCURSAL_TEL
+	FROM [gd_esquema].[Maestra] m
+	LEFT JOIN [ALTA_DATA].[Ciudad]
+		ON
+			ciu_nombre = m.CIUDAD
+	WHERE
+		m.SUCURSAL_DIR IS NOT NULL
+		OR m.SUCURSAL_MAIL IS NOT NULL
+		OR m.SUCURSAL_TEL IS NOT NULL
+		
+
+
+	END;
+
+	CREATE TABLE [ALTA_DATA].[Stock] (
+	  [id_stock] INTEGER IDENTITY(1,1) PRIMARY KEY,
+	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
+	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
+	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
+	  [stock_cantidad] INTEGER
+	);
+
+	CREATE TABLE [ALTA_DATA].[Cliente] (
+	  [id_cliente] INTEGER IDENTITY(1,1) PRIMARY KEY,
+	  [cli_apellido] NVARCHAR(255),
+	  [cli_nombre] NVARCHAR(255),
+	  [cli_direccion] NVARCHAR(255),
+	  [cli_dni] DECIMAL,
+	  [cli_fecha_nacimiento] DATETIME2,
+	  [cli_mail] NVARCHAR(255),
+	  [cli_telefono] INT,
+	  [cli_sexo] CHAR NULL
+	);
 
 
 
