@@ -23,7 +23,6 @@ BEGIN
 	  [mic_velocidad] NVARCHAR(50),
 	  [mic_fabricante] NVARCHAR(255)
 	);
-
 	
 	CREATE TABLE [ALTA_DATA].[Disco_Rigido] (
 	  [id_disco_rigido] NVARCHAR(255) PRIMARY KEY,
@@ -61,7 +60,6 @@ BEGIN
 
 -- Accesorios
 
-	
 	CREATE TABLE [ALTA_DATA].[Accesorios] (
 	  [id_accesorio] DECIMAL PRIMARY KEY,
 	  [acc_descripcion] NVARCHAR(255),
@@ -106,7 +104,6 @@ BEGIN
 
 -- Compras
 	
-
 	CREATE TABLE [ALTA_DATA].[Compra] (
 	  [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal) ,
@@ -127,7 +124,6 @@ BEGIN
 
 -- Ventas
 
-
 	CREATE TABLE [ALTA_DATA].[Factura] (
 	  [id_factura] DECIMAL IDENTITY PRIMARY KEY,
 	  [id_cliente] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Cliente](id_cliente),
@@ -144,7 +140,7 @@ BEGIN
 	  [itemf_cantidad] INTEGER,
 	  [itemf_precio] DECIMAL
 	);
-END
+END;
 	
 
 -- MIGRACION DE DATOS --
@@ -169,9 +165,10 @@ BEGIN
 			,m.MEMORIA_RAM_VELOCIDAD 
 			,m.MEMORIA_RAM_FABRICANTE
 		FROM [gd_esquema].[Maestra] m
-			WHERE m.MEMORIA_RAM_CODIGO IS NOT NULL
+			WHERE m.MEMORIA_RAM_CODIGO IS NOT NULL;
 
 	END;
+	
 -- Microprocesador
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Microprocesador](
@@ -190,6 +187,7 @@ BEGIN
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.MICROPROCESADOR_CODIGO IS NOT NULL;
 	END;
+	
 -- Disco rigido
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Disco_Rigido] (
@@ -207,7 +205,8 @@ BEGIN
 			,m.DISCO_RIGIDO_VELOCIDAD
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.DISCO_RIGIDO_CODIGO IS NOT NULL;
-	END
+	END;
+	
 -- Motherboard
 /*
 No hay datos de las motherboards en la tabla original
@@ -236,9 +235,9 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.PLACA_VIDEO_CAPACIDAD IS NOT NULL
 				OR m.PLACA_VIDEO_CHIPSET IS NOT NULL
-				OR PLACA_VIDEO_FABRICANTE IS NOT NULL
-				OR PLACA_VIDEO_MODELO IS NOT NULL
-				OR PLACA_VIDEO_VELOCIDAD IS NOT NULL;
+				OR m.PLACA_VIDEO_FABRICANTE IS NOT NULL
+				OR m.PLACA_VIDEO_MODELO IS NOT NULL
+				OR m.PLACA_VIDEO_VELOCIDAD IS NOT NULL;
 	END;
 
 -- PC
@@ -280,6 +279,145 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 		WHERE m.PC_CODIGO IS NOT NULL;
 
 	END;
+	
+-- Accesorios
+/*
+La tabla maestra no cuenta con el fabricante de accesorios
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Accesorios](
+			 [id_accesorio]
+			,[acc_descripcion]
+			,[acc_fabricante]
+			)
+		SELECT DISTINCT 
+			 m.ACCESORIO_CODIGO
+			,m.AC_DESCRIPCION
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.ACCESORIO_CODIGOO IS NOT NULL;
+
+	END;
+
+-- Ciudad
+/* 
+Como no hay codigos de las ciudades dejamos que se genere un id automaticamente
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Ciudad](
+			,[ciu_nombre]
+			)
+		SELECT DISTINCT 
+			 m.CIUDAD
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.CIUDAD IS NOT NULL;
+
+	END;
+
+-- Sucursal
+/*
+Como no hay codigos de las sucursales, ni de las ciudades dejamos que se genere un id automaticamente
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Sucursal](
+			 [suc_direccion]
+			,[suc_mail]
+			,[suc_telefono]
+			)
+		SELECT DISTINCT 
+			 m.SUCURSAL_DIR
+			,m.SUCURSAL_MAIL
+			,m.SUCURSAL_TEL
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.SUCURSAL_DIR IS NOT NULL
+				OR m.SUCURSAL_MAIL IS NOT NULL
+				OR m.SUCURSAL_TEL IS NOT NULL;
+	END;
+
+-- Stock
+/*
+No hay datos del stock en la tabla original
+*/
+
+-- Cliente
+/* 
+Como no hay codigos de los clientes dejamos que se genere un id automaticamente, ademas falta el sexo del cliente en la tabla maestra
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Cliente](
+			 [cli_apellido]
+			,[cli_nombre]
+			,[cli_direccion]
+			,[cli_dni]
+			,[cli_fecha_nacimiento]
+			,[cli_mail]
+			,[cli_telefono]
+			)
+		SELECT DISTINCT 
+			 m.CLIENTE_APELLIDO
+			,m.CLIENTE_NOMBRE
+			,m.CLIENTE_DIRECCION
+			,m.CLIENTE_DNI
+			,m.CLIENTE_FECHA_NACIMIENTO
+			,m.CLIENTE_MAIL
+			,m.CLIENTE_TELEFONO
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.CLIENTE_APELLIDO IS NOT NULL
+				OR m.CLIENTE_NOMBRE IS NOT NULL
+				OR m.CLIENTE_DIRECCION IS NOT NULL
+				OR m.CLIENTE_DNI IS NOT NULL
+				OR m.CLIENTE_FECHA_NACIMIENTO IS NOT NULL
+				OR m.CLIENTE_MAIL IS NOT NULL
+				OR m.CLIENTE_TELEFONO IS NOT NULL;
+
+	END;
+
+-- Compra
+/*
+Como no hay codigos de compra, dejamos que se genere un id automaticamente, 
+falta tambien el codigo de sucursal
+compra total lo calculo como el producto entre el precio y la cantidad de compra,
+por ultimo falta un campo para almacenar el numero de compra
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Compra](
+			 [com_fecha]
+			,[com_total]
+			)
+		SELECT DISTINCT 
+			 m.COMPRA_FECHA
+			,m.SUCURSAL_MAIL * m.SUCURSAL_TEL
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.COMPRA_FECHA IS NOT NULL
+				OR m.COMPRA_PRECIO IS NOT NULL
+				OR m.COMPRA_CANTIDAD IS NOT NULL;
+	END;
+
+-- Item Compra
+/*
+No hay datos de los items compra en la tabla original
+*/
+
+-- Factura
+/*
+Como no hay codigo de factura dejamos que se genere un id automaticamente,
+ademas falta el codigo de cliente y sucursal y la factura total 
+y no tengo un campo para almacenar el numero de factura
+*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Factura](
+			 [fac_fecha]
+			)
+		SELECT DISTINCT 
+			 m.FACTURA_FECHA
+		FROM [gd_esquema].[Maestra] m
+			WHERE m.FACTURA_FECHA IS NOT NULL;
+	END;
+	
+-- Item Factura
+/*
+No hay datos de los items factura en la tabla original
+*/
+
 
 /* Queries verificacion PCs
 SELECT DISTINCT
