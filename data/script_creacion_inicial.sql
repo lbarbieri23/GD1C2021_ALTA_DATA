@@ -288,13 +288,12 @@ La tabla maestra no cuenta con el fabricante de accesorios
 		INSERT INTO [ALTA_DATA].[Accesorios](
 			 [id_accesorio]
 			,[acc_descripcion]
-			,[acc_fabricante]
 			)
 		SELECT DISTINCT 
 			 m.ACCESORIO_CODIGO
 			,m.AC_DESCRIPCION
 		FROM [gd_esquema].[Maestra] m
-			WHERE m.ACCESORIO_CODIGOO IS NOT NULL;
+			WHERE m.ACCESORIO_CODIGO IS NOT NULL;
 
 	END;
 
@@ -304,7 +303,7 @@ Como no hay codigos de las ciudades dejamos que se genere un id automaticamente
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Ciudad](
-			,[ciu_nombre]
+			[ciu_nombre]
 			)
 		SELECT DISTINCT 
 			 m.CIUDAD
