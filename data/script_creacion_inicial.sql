@@ -1,10 +1,8 @@
 -- CREAR ESQUEMA
-GO
 CREATE SCHEMA [ALTA_DATA];
-
+GO
 
 -- CREAR TABLAS
-GO
 BEGIN 
 
 -- Componentes PC
@@ -89,7 +87,8 @@ BEGIN
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal),
 	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[PC](id_pc),
 	  [id_accesorio] DECIMAL(18,0) FOREIGN KEY REFERENCES [ALTA_DATA].[Accesorios](id_accesorio),
-	  [stock_cantidad] INTEGER
+	  [stock_cantidad] INTEGER,
+	  [stock_precio] DECIMAL(18,2)
 	);
 
 	CREATE TABLE [ALTA_DATA].[Cliente] (
@@ -152,7 +151,7 @@ END
 -- COMPONENTES PC
 
 -- Memoria RAM
-GO
+
 BEGIN
 -- Memoria RAM
 	BEGIN
@@ -644,7 +643,8 @@ Se actualizan los precios totales de cada factura segun la suma de los items ven
 
 -- Stock
 /* 
-El Stock se hace al final porque tenemos que calcular el stock actual en base a todas las compras y ventas que se hicieron 
+El Stock se hace al final porque tenemos que calcular el stock actual en base a todas las compras y ventas que se hicieron
+El precio en stock se calcula como el precio promedio de compra de cada producto mas el 20%
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Stock] (
@@ -652,6 +652,7 @@ El Stock se hace al final porque tenemos que calcular el stock actual en base a 
 		  ,[id_pc]
 		  ,[id_accesorio]
 		  ,[stock_cantidad]
+		  ,[stock_precio]
 		)
 		SELECT
 			 f.id_sucursal
@@ -670,7 +671,19 @@ El Stock se hace al final porque tenemos que calcular el stock actual en base a 
 					,itc.id_pc
 					,itc.id_accesorio
 				) - SUM(itf.itemf_cantidad)
-
+			,(SELECT TOP 1
+					AVG(itc.itemc_precio) * 1.2
+				FROM [ALTA_DATA].[Item_compra] itc, [ALTA_DATA].[Compra] c
+				WHERE
+					c.id_sucursal = f.id_sucursal
+					AND c.id_compra = itc.id_compra
+					AND (itc.id_pc = itf.id_pc 
+					OR itc.id_accesorio = itf.id_accesorio)
+				GROUP BY
+					c.id_sucursal
+					,itc.id_pc
+					,itc.id_accesorio
+				)
 		FROM [ALTA_DATA].[Item_factura] itf
 		JOIN [ALTA_DATA].[Factura] f
 			ON f.id_factura = itf.id_factura
@@ -682,7 +695,74 @@ El Stock se hace al final porque tenemos que calcular el stock actual en base a 
 	END;
 	
 
+-- Constraints adicionales
+
+	BEGIN
+	--Stock
+	/*
+	Como el stock de un producto para determinada sucursal no puede ser menor a cero agregamos una constraint para eso
+	*/
+		ALTER TABLE [ALTA_DATA].[Stock]
+		ADD CONSTRAINT stock_positivo
+		CHECK (stock_cantidad >= 0);
+
+	END;
 END;
+GO
+
+	
+-- Triggers
+
+-- Actualizar el stock al crearse una factura
+CREATE TRIGGER [ALTA_DATA].[actualizar_stock_al_facturar]
+ON [ALTA_DATA].[Item_factura]
+AFTER INSERT
+AS
+
+	UPDATE s
+	SET	s.stock_cantidad = s.stock_cantidad - i.itemf_cantidad
+	FROM [ALTA_DATA].[Stock] s
+
+	JOIN [ALTA_DATA].[Factura] f
+		ON
+			f.id_sucursal = s.id_sucursal
+	JOIN Inserted i
+		ON 
+			i.id_factura = f.id_factura
+	WHERE 
+		f.id_sucursal = s.id_sucursal
+		AND
+			(s.id_pc = i.id_pc
+			OR s.id_accesorio = i.id_accesorio)
+GO
+
+-- Actualizaz el stock al hacer una compra y el precio del producto
+/*
+Cuando se hace una compra de un producto se actualiza el precio de ese producto al precio de compra mas un 20%. De esta manera se puede
+mantener un precio actualizado ante los cambios del mercado
+*/
+CREATE TRIGGER [ALTA_DATA].[actualizar_stock_al_comprar]
+ON [ALTA_DATA].[Item_compra]
+AFTER INSERT
+AS
+
+	UPDATE s
+	SET	
+		 s.stock_cantidad = s.stock_cantidad - i.itemc_cantidad
+		,s.stock_precio = i.itemc_precio * 1.2
+	FROM [ALTA_DATA].[Stock] s
+
+	JOIN [ALTA_DATA].[Compra] c
+		ON
+			c.id_sucursal = s.id_sucursal
+	JOIN Inserted i
+		ON 
+			i.id_compra = c.id_compra
+	WHERE 
+		c.id_sucursal = s.id_sucursal
+		AND
+			(s.id_pc = i.id_pc
+			OR s.id_accesorio = i.id_accesorio)
 GO
 
 -- BORRAR TODO: NO DESCOMENTAR
