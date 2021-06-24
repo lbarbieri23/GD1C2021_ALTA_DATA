@@ -65,8 +65,9 @@ BEGIN
 
 -- Accesorios
 
-	CREATE TABLE [ALTA_DATA].[BI_Accesorios] (
+	CREATE TABLE [ALTA_DATA].[BI_Accesorio] (
 	  [id_accesorio] DECIMAL PRIMARY KEY,
+	  [acc_fabricante] NVARCHAR(255),
 	  [acc_descripcion] NVARCHAR(255)
 	);
 
@@ -74,47 +75,29 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[BI_Cliente] (
 	[id_cliente] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	[cli_apellido] NVARCHAR(255),
-	[cli_nombre] NVARCHAR(255),
-	[cli_edad] DECIMAL
-	[cli_sexo] CHAR NULL
-	[cli_direccion] NVARCHAR(255),
-	[cli_dni] DECIMAL
-	[cli_mail] NVARCHAR(255),
-	[cli_telefono] INT
+    [cli_fecha_nacimiento] DATETIME2,
+    [cli_sexo] CHAR NULL
 	);
 
 -- Sucursales
 
-    CREATE TABLE [ALTA_DATA].[BI_Ciudad] (
-	  [id_ciudad] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	  [ciu_nombre] NVARCHAR(255)
-	);
-
 	CREATE TABLE [ALTA_DATA].[BI_Sucursal] (
-	  [id_sucursal] INTEGER IDENTITY(1,1) PRIMARY KEY,
-      [id_ciudad] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Ciudad](id_ciudad),
-      [suc_direccion] NVARCHAR(255),
-      [suc_mail] NVARCHAR(255),
-      [suc_telefono] DECIMAL
+      [id_sucursal] INTEGER IDENTITY(1,1) PRIMARY KEY,
+      [ciu_nombre] INTEGER,
+      [suc_telefono] DECIMAL,
+      [suc_mail] NVARCHAR (255),
+      [suc_direccion] NVARCHAR (255)
 	);
 
 -- Compras
 
 	CREATE TABLE [ALTA_DATA].[BI_Compra] (
 	 [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
-     [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Sucursal](id_sucursal) ,
-     [com_fecha] DATETIME2,
-     [com_total] DECIMAL
+     [id_pc] NVARCHAR(50),
+     [fecha] DATETIME2,
+     [precio] DECIMAL,
+     [id_accesorio] INTEGER
      );
-
-    CREATE TABLE [ALTA_DATA].[BI_Item_compra] (
-    [id_compra] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Compra](id_compra),
-    [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_PC](id_pc),
-    [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Accesorios](id_accesorio),
-    [item_cantidad] INTEGER,
-    [item_precio] DECIMAL
-    	);
 
 -- Ventas
 
@@ -122,33 +105,21 @@ BEGIN
 	[id_venta] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	[fecha] DATETIME2,
 	[precio] DECIMAL,
-	[accesorio] NVARCHAR,
-	[codigo_pc] NVARCHAR
+	[accesorio] NVARCHAR(255),
+	[codigo_pc] NVARCHAR(255)
 	);
-
-   	CREATE TABLE [ALTA_DATA].[BI_Factura] (
-   	  [id_factura] DECIMAL IDENTITY PRIMARY KEY,
-   	  [id_cliente] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Cliente](id_cliente),
-   	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Sucursal](id_sucursal),
-   	  [fac_fecha] DATETIME2,
-   	  [fact_total] DECIMAL
-   	);
-
-   	CREATE TABLE [ALTA_DATA].[BI_Item_factura] (
-   	  [id_itemf] INTEGER IDENTITY(1,1) PRIMARY KEY,
-   	  [id_factura] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Factura](id_factura),
-   	  [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_PC](id_pc),
-   	  [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Accesorios](id_accesorio),
-   	  [itemf_cantidad] INTEGER,
-   	  [itemf_precio] DECIMAL
-   	);
 
 -- Tiempo
 
-	CREATE TABLE [ALTA_DATA].[BI_Tiempo] (
-	  [id_sucursal] INTEGER IDENTITY (1,1) PRIMARY KEY,
-	  [tie_anio] DECIMAL,
-	  [tie_mes] DECIMAL,
+	CREATE TABLE [ALTA_DATA].[BI_Hechos] (
+    	  [anio] DECIMAL,
+    	  [mes] DECIMAL,
+    	  [id_sucursal] INTEGER,
+    	  [id_pc] NVARCHAR(50),
+    	  [id_accesorio] DECIMAL,
+    	  [id_cliente] INTEGER,
+    	  [id_venta] INTEGER,
+    	  [id_compra] INTEGER
 	);
 
 END
