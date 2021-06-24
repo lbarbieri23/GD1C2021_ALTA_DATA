@@ -94,8 +94,9 @@ BEGIN
 	CREATE TABLE [ALTA_DATA].[BI_Compra] (
 	 [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
      [id_pc] NVARCHAR(50),
-     [fecha] DATETIME2,
-     [precio] DECIMAL,
+     [com_fecha] DATETIME2,
+     [com_precio] DECIMAL,
+     [com_cantidad] DECIMAL,
      [id_accesorio] INTEGER
      );
 
@@ -103,8 +104,9 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[BI_Venta] (
 	[id_venta] INTEGER IDENTITY(1,1) PRIMARY KEY,
-	[fecha] DATETIME2,
-	[precio] DECIMAL,
+	[ven_fecha] DATETIME2,
+	[ven_precio] DECIMAL,
+	[ven_cantidad] DECIMAL,
 	[accesorio] NVARCHAR(255),
 	[codigo_pc] NVARCHAR(255)
 	);
