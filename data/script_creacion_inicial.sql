@@ -384,7 +384,7 @@ por ultimo falta un campo para almacenar el numero de compra
 			)
 		SELECT DISTINCT
 			 m.COMPRA_FECHA
-			,m.SUCURSAL_MAIL * m.SUCURSAL_TEL
+			,m.COMPRA_PRECIO * m.COMPRA_CANTIDAD
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.COMPRA_FECHA IS NOT NULL
 				OR m.COMPRA_PRECIO IS NOT NULL
@@ -481,20 +481,12 @@ where pc_codigo is not null
 
 
 
-
-
-
-
-
-
-
-
-
 END;
 GO
 
 -- BORRAR TODO: NO DESCOMENTAR
-
+/*
+/*
 /*
 GO
 BEGIN
@@ -515,5 +507,7 @@ DROP TABLE [ALTA_DATA].[Motherboard];
 DROP TABLE [ALTA_DATA].[Placa_Video];
 END
 DROP SCHEMA [ALTA_DATA];
+*/
+*/
 */
 

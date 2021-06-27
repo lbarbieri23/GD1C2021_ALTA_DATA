@@ -293,8 +293,22 @@ tabla cliente del modelo inicial
 
 -- Tiempo
 /*
-No hay datos de mes y anio en el medelo inicial
+Como no hay codigos de fecha dejamos que se genere un id automaticamente
 */
+	BEGIN
+		INSERT INTO [ALTA_DATA].[BI_Tiempo](
+		     [mes]
+		    ,[anio]
+			)
+		SELECT DISTINCT *
+		FROM (
+		    SELECT MONTH (c.com_fecha) as mes, year (c.com_fecha) as anio
+		    FROM [ALTA_DATA].[Compra] c
+		    UNION
+		    SELECT MONTH (f.fac_fecha) as mes, year (f.fac_fecha) as anio
+        	FROM [ALTA_DATA].[Factura] f
+        		)
+	END;
 
 -- Compra
 /*
@@ -344,6 +358,14 @@ Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta 
 
 END;
 GO
+
+    CREATE FUNCTION compras_por_producto_por_sucursal_por_mes(@tipo_producto NVARCHAR (30))
+    RETURNS TABLE
+    AS
+        RETURN(
+        SELECT
+        )
+
 
 -- BORRAR TODO: NO DESCOMENTAR
 /*
