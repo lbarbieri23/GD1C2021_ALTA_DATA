@@ -5,7 +5,7 @@ CREATE SCHEMA [ALTA_DATA];
 
 -- CREAR TABLAS
 GO
-BEGIN 
+BEGIN
 
 -- Componentes PC
 	CREATE TABLE [ALTA_DATA].[Memoria_Ram] (
@@ -23,7 +23,7 @@ BEGIN
 	  [mic_velocidad] NVARCHAR(50),
 	  [mic_fabricante] NVARCHAR(255)
 	);
-	
+
 	CREATE TABLE [ALTA_DATA].[Disco_Rigido] (
 	  [id_disco_rigido] NVARCHAR(255) PRIMARY KEY,
 	  [dr_tipo] NVARCHAR(255),
@@ -103,7 +103,7 @@ BEGIN
 	);
 
 -- Compras
-	
+
 	CREATE TABLE [ALTA_DATA].[Compra] (
 	  [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[Sucursal](id_sucursal) ,
@@ -131,7 +131,7 @@ BEGIN
 	  [fac_fecha] DATETIME2,
 	  [fact_total] DECIMAL
 	);
-	
+
 	CREATE TABLE [ALTA_DATA].[Item_factura] (
 	  [id_itemf] INTEGER IDENTITY(1,1) PRIMARY KEY,
 	  [id_factura] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[Factura](id_factura),
@@ -141,7 +141,7 @@ BEGIN
 	  [itemf_precio] DECIMAL
 	);
 END;
-	
+
 
 -- MIGRACION DE DATOS --
 
@@ -158,17 +158,17 @@ BEGIN
 			,[mr_velocidad]
 			,[mr_fabricante]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.MEMORIA_RAM_CODIGO
 			,m.MEMORIA_RAM_TIPO
 			,m.MEMORIA_RAM_CAPACIDAD
-			,m.MEMORIA_RAM_VELOCIDAD 
+			,m.MEMORIA_RAM_VELOCIDAD
 			,m.MEMORIA_RAM_FABRICANTE
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.MEMORIA_RAM_CODIGO IS NOT NULL;
 
 	END;
-	
+
 -- Microprocesador
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Microprocesador](
@@ -187,15 +187,15 @@ BEGIN
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.MICROPROCESADOR_CODIGO IS NOT NULL;
 	END;
-	
+
 -- Disco rigido
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Disco_Rigido] (
 			   [id_disco_rigido]
-			  ,[dr_tipo] 
-			  ,[dr_capacidad] 
+			  ,[dr_tipo]
+			  ,[dr_capacidad]
 			  ,[dr_fabricante]
-			  ,[dr_velocidad] 
+			  ,[dr_velocidad]
 			)
 		SELECT DISTINCT
 			 m.DISCO_RIGIDO_CODIGO
@@ -206,16 +206,16 @@ BEGIN
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.DISCO_RIGIDO_CODIGO IS NOT NULL;
 	END;
-	
+
 -- Motherboard
 /*
 No hay datos de las motherboards en la tabla original
 */
-	
+
 -- Placa de video
-/* 
+/*
 Como no hay codigos de las placas de video dejamos que se genere un id automaticamente
-Ademas, como no sabemos si todas las columnas tienen valores no nulos lo mejor es filtrar 
+Ademas, como no sabemos si todas las columnas tienen valores no nulos lo mejor es filtrar
 en el where todas aquellas filas que tengan al menos un campo de la placa de video no nulo
 */
 	BEGIN
@@ -227,11 +227,11 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
 			  ,[pv_fabricante]
 			)
 		SELECT DISTINCT
-			 m.PLACA_VIDEO_CHIPSET 
+			 m.PLACA_VIDEO_CHIPSET
 			,m.PLACA_VIDEO_MODELO
-			,m.PLACA_VIDEO_VELOCIDAD 
-			,m.PLACA_VIDEO_CAPACIDAD 
-			,m.PLACA_VIDEO_FABRICANTE			
+			,m.PLACA_VIDEO_VELOCIDAD
+			,m.PLACA_VIDEO_CAPACIDAD
+			,m.PLACA_VIDEO_FABRICANTE
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.PLACA_VIDEO_CAPACIDAD IS NOT NULL
 				OR m.PLACA_VIDEO_CHIPSET IS NOT NULL
@@ -255,7 +255,7 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 			  ,[id_motherboard]
 			  ,[pc_alto]
 			  ,[pc_ancho]
-			  ,[pc_profundidad] 
+			  ,[pc_profundidad]
 			)
 		SELECT DISTINCT
 			 m.PC_CODIGO
@@ -263,13 +263,13 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 			,m.MEMORIA_RAM_CODIGO
 			,m.MICROPROCESADOR_CODIGO
 			,id_placa_video
-			,NULL 
+			,NULL
 			,m.PC_ALTO
 			,m.PC_ANCHO
 			,m.PC_PROFUNDIDAD
 		FROM [gd_esquema].[Maestra] m
 
-		LEFT JOIN [ALTA_DATA].[Placa_Video] 
+		LEFT JOIN [ALTA_DATA].[Placa_Video]
 			ON
 				m.PLACA_VIDEO_CAPACIDAD = pv_capacidad
 				AND m.PLACA_VIDEO_CHIPSET = pv_chipset
@@ -279,7 +279,7 @@ No hay datos de las motherboards asi que por ahora va a quedar en NULL este camp
 		WHERE m.PC_CODIGO IS NOT NULL;
 
 	END;
-	
+
 -- Accesorios
 /*
 La tabla maestra no cuenta con el fabricante de accesorios
@@ -289,7 +289,7 @@ La tabla maestra no cuenta con el fabricante de accesorios
 			 [id_accesorio]
 			,[acc_descripcion]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.ACCESORIO_CODIGO
 			,m.AC_DESCRIPCION
 		FROM [gd_esquema].[Maestra] m
@@ -298,14 +298,14 @@ La tabla maestra no cuenta con el fabricante de accesorios
 	END;
 
 -- Ciudad
-/* 
+/*
 Como no hay codigos de las ciudades dejamos que se genere un id automaticamente
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Ciudad](
 			[ciu_nombre]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.CIUDAD
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.CIUDAD IS NOT NULL;
@@ -322,7 +322,7 @@ Como no hay codigos de las sucursales, ni de las ciudades dejamos que se genere 
 			,[suc_mail]
 			,[suc_telefono]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.SUCURSAL_DIR
 			,m.SUCURSAL_MAIL
 			,m.SUCURSAL_TEL
@@ -338,7 +338,7 @@ No hay datos del stock en la tabla original
 */
 
 -- Cliente
-/* 
+/*
 Como no hay codigos de los clientes dejamos que se genere un id automaticamente, ademas falta el sexo del cliente en la tabla maestra
 */
 	BEGIN
@@ -351,7 +351,7 @@ Como no hay codigos de los clientes dejamos que se genere un id automaticamente,
 			,[cli_mail]
 			,[cli_telefono]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.CLIENTE_APELLIDO
 			,m.CLIENTE_NOMBRE
 			,m.CLIENTE_DIRECCION
@@ -372,7 +372,7 @@ Como no hay codigos de los clientes dejamos que se genere un id automaticamente,
 
 -- Compra
 /*
-Como no hay codigos de compra, dejamos que se genere un id automaticamente, 
+Como no hay codigos de compra, dejamos que se genere un id automaticamente,
 falta tambien el codigo de sucursal
 compra total lo calculo como el producto entre el precio y la cantidad de compra,
 por ultimo falta un campo para almacenar el numero de compra
@@ -382,7 +382,7 @@ por ultimo falta un campo para almacenar el numero de compra
 			 [com_fecha]
 			,[com_total]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.COMPRA_FECHA
 			,m.SUCURSAL_MAIL * m.SUCURSAL_TEL
 		FROM [gd_esquema].[Maestra] m
@@ -409,19 +409,19 @@ Como no hay codigos de compra, dejamos que se genere un id automaticamente
 -- Factura
 /*
 Como no hay codigo de factura dejamos que se genere un id automaticamente,
-ademas falta el codigo de cliente y sucursal y la factura total 
+ademas falta el codigo de cliente y sucursal y la factura total
 y no tengo un campo para almacenar el numero de factura
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[Factura](
 			 [fac_fecha]
 			)
-		SELECT DISTINCT 
+		SELECT DISTINCT
 			 m.FACTURA_FECHA
 		FROM [gd_esquema].[Maestra] m
 			WHERE m.FACTURA_FECHA IS NOT NULL;
 	END;
-	
+
 -- Item Factura
 /*
 No hay datos de los items factura en la tabla original
@@ -435,14 +435,14 @@ SELECT DISTINCT
 	,m.MEMORIA_RAM_CODIGO
 	,m.MICROPROCESADOR_CODIGO
 	,id_placa_video
-	,NULL 
+	,NULL
 	,m.PC_ALTO
 	,m.PC_ANCHO
 	,m.PC_PROFUNDIDAD
 FROM [gd_esquema].[Maestra] m
 
 -- La tabla de placa_video esta como una subquery
-LEFT JOIN ( 
+LEFT JOIN (
 	SELECT DISTINCT
 		ROW_NUMBER() OVER(ORDER BY m.PLACA_VIDEO_CHIPSET) id_placa_video -- Genero un id al vuelo con ROW_NUMBER
 		,m.PLACA_VIDEO_CAPACIDAD pv_capacidad
@@ -457,9 +457,9 @@ LEFT JOIN (
 			OR PLACA_VIDEO_MODELO IS NOT NULL
 			OR PLACA_VIDEO_VELOCIDAD IS NOT NULL
 	GROUP BY m.PLACA_VIDEO_CAPACIDAD -- El group by es para que el row_number no me cree un id para cada fila que tiene placa de video en la tabla maestra
-								,m.PLACA_VIDEO_CHIPSET 
-								,m.PLACA_VIDEO_FABRICANTE 
-								,m.PLACA_VIDEO_MODELO 
+								,m.PLACA_VIDEO_CHIPSET
+								,m.PLACA_VIDEO_FABRICANTE
+								,m.PLACA_VIDEO_MODELO
 								,m.PLACA_VIDEO_VELOCIDAD
 	) pv
 		ON
@@ -494,8 +494,7 @@ END;
 GO
 
 -- BORRAR TODO: NO DESCOMENTAR
-/*
-/*
+
 /*
 GO
 BEGIN
@@ -517,5 +516,4 @@ DROP TABLE [ALTA_DATA].[Placa_Video];
 END
 DROP SCHEMA [ALTA_DATA];
 */
-*/
-*/
+
