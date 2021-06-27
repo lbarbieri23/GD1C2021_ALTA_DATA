@@ -1,16 +1,7 @@
--- CREAR ESQUEMA
-
-GO
-
-CREATE SCHEMA [ALTA_DATA];
-
-
 -- CREAR TABLAS
-
 GO
 
 BEGIN
-
 -- Componentes de PC
 
     CREATE TABLE [ALTA_DATA].[BI_Memoria_Ram] (
@@ -75,10 +66,9 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[BI_Sucursal] (
       [id_sucursal] INTEGER IDENTITY(1,1) PRIMARY KEY,
-      [ciu_nombre] INTEGER,
-      [suc_telefono] DECIMAL,
-      [suc_mail] NVARCHAR (255),
       [suc_direccion] NVARCHAR (255)
+      [suc_mail] NVARCHAR (255),
+      [suc_telefono] DECIMAL
 	);
 
 -- Clientes
@@ -93,11 +83,14 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[BI_Compra] (
 	 [id_compra] INTEGER IDENTITY(1,1) PRIMARY KEY,
-     [id_pc] NVARCHAR(50),
      [com_fecha] DATETIME2,
      [com_precio] DECIMAL,
      [com_cantidad] DECIMAL,
-     [id_accesorio] INTEGER
+     [cod_fecha] INTEGER,
+     [id_pc] NVARCHAR(50),
+     [id_accesorio] DECIMAL,
+     [id_sucursal] INTEGER,
+     [id_cliente] INTEGER
      );
 
 -- Ventas
@@ -107,21 +100,19 @@ BEGIN
 	[ven_fecha] DATETIME2,
 	[ven_precio] DECIMAL,
 	[ven_cantidad] DECIMAL,
-	[accesorio] NVARCHAR(255),
-	[codigo_pc] NVARCHAR(255)
+	[cod_fecha] INTEGER,
+	[id_pc] NVARCHAR(50),
+	[id_accesorio] DECIMAL,
+	[id_sucursal] INTEGER,
+	[id_cliente] INTEGER
 	);
 
 -- Tiempo
 
 	CREATE TABLE [ALTA_DATA].[BI_Hechos] (
-    	  [anio] DECIMAL,
+	      [cod_fecha] INTEGER IDENTITY(1,1) PRIMARY KEY,
     	  [mes] DECIMAL,
-    	  [id_sucursal] INTEGER,
-    	  [id_pc] NVARCHAR(50),
-    	  [id_accesorio] DECIMAL,
-    	  [id_cliente] INTEGER,
-    	  [id_venta] INTEGER,
-    	  [id_compra] INTEGER
+    	  [anio] DECIMAL,
 	);
 
 END;
@@ -373,32 +364,5 @@ Como no hay datos de mes y anio en el medelo inicial, ni tampoco id de compra ni
 
 END;
 GO
-
--- BORRAR NO DESCOMENTAR
-/*
-/*
-/*
-GO
-BEGIN
-DROP TABLE [ALTA_DATA].[Item_factura];
-DROP TABLE [ALTA_DATA].[Factura];
-DROP TABLE [ALTA_DATA].[Item_compra];
-DROP TABLE [ALTA_DATA].[Compra];
-DROP TABLE [ALTA_DATA].[Cliente];
-DROP TABLE [ALTA_DATA].[Stock];
-DROP TABLE [ALTA_DATA].[Sucursal];
-DROP TABLE [ALTA_DATA].[Ciudad];
-DROP TABLE [ALTA_DATA].[Accesorios];
-DROP TABLE [ALTA_DATA].[PC];
-DROP TABLE [ALTA_DATA].[Memoria_Ram];
-DROP TABLE [ALTA_DATA].[Microprocesador];
-DROP TABLE [ALTA_DATA].[Disco_Rigido];
-DROP TABLE [ALTA_DATA].[Motherboard];
-DROP TABLE [ALTA_DATA].[Placa_Video];
-END
-DROP SCHEMA [ALTA_DATA];
-*/
-*/
-*/
 
 
