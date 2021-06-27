@@ -165,7 +165,7 @@ BEGIN
 -- Disco Rigido
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Disco_Rigido] (
-			  [id_disco_rigido]
+			   [id_disco_rigido]
 			  ,[dr_tipo]
 			  ,[dr_capacidad]
 			  ,[dr_fabricante]
@@ -209,11 +209,11 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
 			  ,m.[pv_capacidad]
 			  ,m.[pv_fabricante]
 		FROM [ALTA_DATA].[Placa_Video] m
-			WHERE m.[pv_capacidad]IS NOT NULL
-				OR m.[pv_chipset] IS NOT NULL
-				OR m.[pv_fabricante]IS NOT NULL
+			WHERE m.[pv_chipset]IS NOT NULL
 				OR m.[pv_modelo] IS NOT NULL
-				OR m.[pv_velocidad] IS NOT NULL;
+				OR m.[pv_velocidad]IS NOT NULL
+				OR m.[pv_capacidad] IS NOT NULL
+				OR m.[pv_fabricante] IS NOT NULL;
 	END;
 
 -- PC
@@ -244,11 +244,11 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
 
 		LEFT JOIN [ALTA_DATA].[BI_Placa_Video]
 			ON
-				m.pv_capacidad = pv_capacidad
-				AND m.pv_chipset = pv_chipset
-				AND m.pv_fabricante = pv_fabricante
+				m.pv_chipset = pv_chipset
 				AND m.pv_modelo = pv_modelo
 				AND m.pv_velocidad = pv_velocidad
+				AND m.pv_capacidad = pv_capacidad
+				AND m.pv_fabricante = pv_fabricante
 		WHERE m.[id_pc] IS NOT NULL;
 
 	END;
@@ -281,11 +281,11 @@ Como no hay codigos de las sucursales, dejamos que se genere un id automaticamen
 			,[suc_direccion]
 			)
 		SELECT DISTINCT
-			 m.[suc_mail]
+			 m.[suc_direccion]
+			,m.[suc_mail]
 			,m.[suc_telefono]
-			,m.[suc_direccion]
 		FROM [ALTA_DATA].[Sucursal] m
-			WHERE m.[suc_direccion] IS NOT NULL
+			 WHERE m.[suc_direccion] IS NOT NULL
 				OR m.[suc_mail] IS NOT NULL
 				OR m.[suc_telefono] IS NOT NULL;
 	END;
@@ -305,61 +305,57 @@ tabla cliente del modelo inicial
 			WHERE m.[cli_fecha_nacimiento] IS NOT NULL;
 	END;
 
+-- Tiempo
+/*
+No hay datos de mes y anio en el medelo inicial
+*/
+
 -- Compra
 /*
-Como no hay codigos de compra, dejamos que se genere un id automaticamente, falta tambien el precio
+Como no hay codigos de compra, dejamos que se genere un id automaticamente
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Compra](
 			 [com_fecha]
+			,[com_precio]
+			,[com_cantidad]
 			,[id_pc]
 			,[id_accesorio]
+			,[id_sucursal]
+			,[id_cliente]
 			)
 		SELECT DISTINCT
-			m.[com_fecha]
+		    m.[com_fecha]
+		   ,i.[com_precio]
+		   ,i.[com_cantidad]
 		   ,p.[id_pc]
 		   ,a.[id_accesorio]
-		FROM [ALTA_DATA].[Compra] m, [ALTA_DATA].[PC] p , [ALTA_DATA].[Accesorios] a
-			WHERE m.[com_fecha] IS NOT NULL
+		   ,s.[id_sucursal]
+		   ,c.[id_cliente]
+		FROM [ALTA_DATA].[Compra] m,[ALTA_DATA].[Item_compra] i, [ALTA_DATA].[PC] p , [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
 	END;
 
 -- Ventas
 /*
-Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta tambien el precio
+Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta tambien el precio y la cantidad que no estan en item factura del modelo inciial
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Ventas](
 			 [ven_fecha]
-			,[accesorio]
-			,[codigo_pc]
+			,[id_pc]
+            ,[id_accesorio]
+            ,[id_sucursal]
+            ,[id_cliente]
 			)
 		SELECT DISTINCT
 			 m.[ven_fecha]
-			,[accesorio]
-            ,[codigo_pc]
-		FROM [ALTA_DATA].[Ventas] m, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a
+		    ,p.[id_pc]
+            ,a.[id_accesorio]
+            ,s.[id_sucursal]
+            ,c.[id_cliente]
+		FROM [ALTA_DATA].[Ventas] m, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
 			WHERE m.[ven_fecha] IS NOT NULL;
 	END;
-
--- Hechos
-/*
-Como no hay datos de mes y anio en el medelo inicial, ni tampoco id de compra ni de venta
-*/
-	BEGIN
-		INSERT INTO [ALTA_DATA].[BI_Hechos](
-			 [id_sucursal]
-			,[id_pc]
-			,[id_accesorio]
-			,[id_cliente]
-			)
-		SELECT DISTINCT
-			 s.[id_sucursal]
-            ,p.[id_pc]
-            ,a.[id_accesorio]
-            ,c.[id_cliente]
-		FROM [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Cliente] c
-	END;
-
 
 
 END;
