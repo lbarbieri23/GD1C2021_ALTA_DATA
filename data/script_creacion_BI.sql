@@ -1,4 +1,4 @@
--- CREAR TABLAS
+
 GO
 
 BEGIN
@@ -44,9 +44,9 @@ BEGIN
 
     CREATE TABLE [ALTA_DATA].[BI_PC] (
     	  [id_pc] NVARCHAR(50) PRIMARY KEY,
-    	  [id_disco_rigido] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Disco_Rigido](id_disco_rigido),
-    	  [id_memoria_ram] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Memoria_Ram](id_memoria_ram),
-    	  [id_microprocesador] NVARCHAR FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Microprocesador](id_microprocesador),
+    	  [id_disco_rigido] NVARCHAR (255) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Disco_Rigido](id_disco_rigido),
+    	  [id_memoria_ram] NVARCHAR (255) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Memoria_Ram](id_memoria_ram),
+    	  [id_microprocesador] NVARCHAR (50) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Microprocesador](id_microprocesador),
     	  [id_placa_video] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Placa_Video](id_placa_video),
     	  [id_motherboard] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Motherboard](id_motherboard),
     	  [pc_alto] DECIMAL,
@@ -66,7 +66,7 @@ BEGIN
 
 	CREATE TABLE [ALTA_DATA].[BI_Sucursal] (
       [id_sucursal] INTEGER IDENTITY(1,1) PRIMARY KEY,
-      [suc_direccion] NVARCHAR (255)
+      [suc_direccion] NVARCHAR (255),
       [suc_mail] NVARCHAR (255),
       [suc_telefono] DECIMAL
 	);
@@ -109,7 +109,7 @@ BEGIN
 
 -- Tiempo
 
-	CREATE TABLE [ALTA_DATA].[BI_Hechos] (
+	CREATE TABLE [ALTA_DATA].[BI_Tiempo] (
 	      [cod_fecha] INTEGER IDENTITY(1,1) PRIMARY KEY,
     	  [mes] DECIMAL,
     	  [anio] DECIMAL,
@@ -189,20 +189,16 @@ No hay datos de las motherboards en el modelo inicial
 -- Placa de video
 /*
 Como no hay codigos de las placas de video dejamos que se genere un id automaticamente
-Ademas, como no sabemos si todas las columnas tienen valores no nulos lo mejor es filtrar
-en el where todas aquellas filas que tengan al menos un campo de la placa de video no nulo
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Placa_Video] (
-		       [id_placa_video]
-			   [pv_chipset]
+			  [pv_chipset]
 			  ,[pv_modelo]
 			  ,[pv_velocidad]
 			  ,[pv_capacidad]
 			  ,[pv_fabricante]
 			)
 		SELECT DISTINCT
-               m.[id_placa_video]
 			   m.[pv_chipset]
 			  ,m.[pv_modelo]
 			  ,m.[pv_velocidad]
@@ -241,16 +237,6 @@ en el where todas aquellas filas que tengan al menos un campo de la placa de vid
             ,m.[pc_ancho]
             ,m.[pc_profundidad]
 		FROM [ALTA_DATA].[PC] m
-
-		LEFT JOIN [ALTA_DATA].[BI_Placa_Video]
-			ON
-				m.pv_chipset = pv_chipset
-				AND m.pv_modelo = pv_modelo
-				AND m.pv_velocidad = pv_velocidad
-				AND m.pv_capacidad = pv_capacidad
-				AND m.pv_fabricante = pv_fabricante
-		WHERE m.[id_pc] IS NOT NULL;
-
 	END;
 
 -- Accesorios
@@ -276,9 +262,9 @@ Como no hay codigos de las sucursales, dejamos que se genere un id automaticamen
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Sucursal](
-			 [suc_mail]
+			 [suc_direccion]
+			,[suc_mail]
 			,[suc_telefono]
-			,[suc_direccion]
 			)
 		SELECT DISTINCT
 			 m.[suc_direccion]
@@ -326,8 +312,8 @@ Como no hay codigos de compra, dejamos que se genere un id automaticamente
 			)
 		SELECT DISTINCT
 		    m.[com_fecha]
-		   ,i.[com_precio]
-		   ,i.[com_cantidad]
+		   ,i.[itemc_precio]
+		   ,i.[itemc_cantidad]
 		   ,p.[id_pc]
 		   ,a.[id_accesorio]
 		   ,s.[id_sucursal]
@@ -340,7 +326,7 @@ Como no hay codigos de compra, dejamos que se genere un id automaticamente
 Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta tambien el precio y la cantidad que no estan en item factura del modelo inciial
 */
 	BEGIN
-		INSERT INTO [ALTA_DATA].[BI_Ventas](
+		INSERT INTO [ALTA_DATA].[BI_Venta](
 			 [ven_fecha]
 			,[id_pc]
             ,[id_accesorio]
@@ -348,17 +334,37 @@ Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta 
             ,[id_cliente]
 			)
 		SELECT DISTINCT
-			 m.[ven_fecha]
+			 m.[fac_fecha]
 		    ,p.[id_pc]
             ,a.[id_accesorio]
             ,s.[id_sucursal]
             ,c.[id_cliente]
-		FROM [ALTA_DATA].[Ventas] m, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
-			WHERE m.[ven_fecha] IS NOT NULL;
+		FROM [ALTA_DATA].[Factura] m, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
 	END;
-
 
 END;
 GO
 
-
+-- BORRAR TODO: NO DESCOMENTAR
+/*
+/*
+/*
+GO
+BEGIN
+DROP TABLE [ALTA_DATA].[BI_Memoria_Ram];
+DROP TABLE [ALTA_DATA].[BI_Microprocesador];
+DROP TABLE [ALTA_DATA].[BI_Disco_Rigido];
+DROP TABLE [ALTA_DATA].[BI_Motherboard];
+DROP TABLE [ALTA_DATA].[BI_Placa_Video];
+DROP TABLE [ALTA_DATA].[BI_PC];
+DROP TABLE [ALTA_DATA].[BI_Accesorio];
+DROP TABLE [ALTA_DATA].[BI_Sucursal];
+DROP TABLE [ALTA_DATA].[BI_Cliente];
+DROP TABLE [ALTA_DATA].[BI_Compra];
+DROP TABLE [ALTA_DATA].[BI_Venta];
+DROP TABLE [ALTA_DATA].[BI_Tiempo];
+END
+DROP SCHEMA [ALTA_DATA];
+*/
+*/
+*/
