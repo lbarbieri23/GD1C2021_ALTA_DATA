@@ -393,8 +393,18 @@ por ultimo falta un campo para almacenar el numero de compra
 
 -- Item Compra
 /*
-No hay datos de los items compra en la tabla original
+Como no hay codigos de compra, dejamos que se genere un id automaticamente
 */
+	BEGIN
+		INSERT INTO [ALTA_DATA].[Item_compra](
+			 [itemc_cantidad]
+			,[itemc_precio]
+			)
+		SELECT DISTINCT
+			 m.COMPRA_CANTIDAD
+			,m.COMPRA_PRECIO
+		FROM [gd_esquema].[Maestra] m
+	END;
 
 -- Factura
 /*
