@@ -358,112 +358,6 @@ END;
 
 GO
 
---1 Promedio de tiempo en stock de cada modelo de Pc.
-
-
-/* hay que ver como hacer el tema del tiempo en stock (restar fechas) */
-
---2 Precio promedio de PCs, vendidos y comprados - PC
-
-CREATE VIEW precio_promedio_pc_compra_venta
-AS
-	SELECT v.id_pc,
-	 AVG(ISNULL(v.ven_precio,0))  AS promedio_precio_venta,
-     AVG(ISNULL(c.com_precio,0))  AS promedio_precio_compra
-	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c
-    GROUP BY v.id_pc
-GO
-
-
-/*El precio promedio de venta no se puede hacer por que no se cuenta con esa informacion desde Item Factura - Ventas */
-
-
---3 Cantidad de PCs, vendidos y comprados x sucursal y mes - PC
-
-    CREATE VIEW cantidad_pc_compradas_por_sucursal_por_mes
-	AS
-	    DECLARE @codigopc NVARCHAR(50)
-		DECLARE @suc INTEGER
-		DECLARE @mes DECIMAL
-		SELECT c.id_pc, c.id_sucursal, t.mes,
-		SUM(com_cantidad) cantidad
-		FROM ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Tiempo t
-		WHERE c.id_pc= @codigopc
-		AND c.id_sucursal = @suc
-		AND t.mes = @mes
-GO
-
---4 Ganancias (precio de venta – precio de compra) x Sucursal x mes - PC
-
-CREATE VIEW ganancia_por_sucursal_por_mes
-AS
-	DECLARE @suc INTEGER
-	DECLARE @mes DECIMAL
-	SELECT v.ven_precio, c.com_precio, s.id_sucursal, t.mes, (v.ven_precio - c.com_precio) ganancia
-	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Sucursal s, ALTA_DATA.BI_Tiempo t
-	WHERE c.id_sucursal = @suc
-		AND t.mes = @mes
-	RETURN ganancia
-GO
-
-
-
-----------------------------------------------------------------------------------------------------------------
-
-
---1 Precio promedio, vendido y comprado - Accesorio
-
-CREATE VIEW precio_promedio_acc_compra_venta
-AS
-	SELECT v.id_accesorio,
-	 AVG(ISNULL(v.ven_precio,0))  AS promedio_precio_venta,
-     AVG(ISNULL(c.com_precio,0))  AS promedio_precio_compra
-	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c
-    GROUP BY v.id_accesorio
-GO
-
-/*El precio promedio de venta no se puede hacer por que no se cuenta con esa informacion desde Item Factura - Ventas */
-
-
---2 Ganancias (precio de venta – precio de compra) x Sucursal x mes - Accesorio
-
-CREATE VIEW ganancia_por_sucursal_por_mes
-AS
-	DECLARE @suc INTEGER
-	DECLARE @mes DECIMAL
-	SELECT v.ven_precio, c.com_precio, s.id_sucursal, t.mes, (v.ven_precio - c.com_precio) ganancia
-	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Sucursal s, ALTA_DATA.BI_Tiempo t
-	WHERE c.id_sucursal = @suc
-		AND t.mes = @mes
-	RETURN ganancia
-GO
-
---3 Promedio de tiempo en stock de cada modelo - Accesorio
-
-
-/* hay que ver como hacer el tema del tiempo en stock (restar fechas) */
-
-
---4 Máxima cantidad de stock por cada sucursal (anual)- Accesorio
-
-    CREATE VIEW max_cantidad_acc_por_sucursal_por_mes
-	AS
-		DECLARE @codigoacc NVARCHAR(50)
-		DECLARE @suc INTEGER
-		DECLARE @mes DECIMAL
-		SELECT c.id_accesorio, c.id_sucursal, t.mes,
--- Hay que ver como hacer el tema del stock, Debido a que no hay ninguna entidad STOCK
-		FROM ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Tiempo t
-		WHERE c.id_accesorio= @codigoacc
-		AND c.id_sucursal = @suc
-		AND t.mes = @mes
-GO
-
-
-
-
-
-
 --##############################################################################################################################
 
 -- VISTAS
@@ -473,11 +367,11 @@ GO
  create view promedio_tiempo_en_stock
 	as
 		select p.[id_pc], t.[anio], t.[mes], avg(datediff(month, isnull(v.[cod_fecha], 0), isnull(c.[cod_fecha], 0))) as promedio_tiempo_en_stock, 
-		from [BI_PC] p
-        left join [BI_Venta] v on p.[id_pc] = v.[id_pc] 
-        left join [BI_Compra] c on p.[id_pc] = c.[id_pc]
-        join [BI_TIEMPO] t on t.[cod_fecha] = v.[cod_fecha] -- se hace asi el join, luego del left join?
-        join [BI_TIEMPO] t on t.[cod_fecha] = c.[cod_fecha]
+		from [ALTA_DATA].[BI_PC] p, [ALTA_DATA].[BI_Venta] v, [ALTA_DATA].[BI_Compra] c
+        left join [ALTA_DATA].[BI_Venta] v on p.[id_pc] = v.[id_pc] 
+        left join [ALTA_DATA].[BI_Compra] c on p.[id_pc] = c.[id_pc]
+			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = v.[cod_fecha] 
+			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = c.[cod_fecha]
 		group by p.[id_pc], t.[anio], t.[mes]
 		order by v.[cod_fecha], c.[cod_fecha]
     END;
@@ -490,7 +384,7 @@ as
 	select v.[id_pc],
      sum(ISNULL(v.[ven_precio],0) / count(ISNULL(v.[ven_precio], 1) ) as promedio_precio_venta
      sum(ISNULL(v.[com_precio],0) / count(ISNULL(v.[com_precio], 1) ) as promedio_precio_compra
-	from [BI_Ventas_PC] v
+	from [ALTA_DATA][BI_Venta] v
     group by v.[id_pc]
 END;
 GO
@@ -504,12 +398,12 @@ as
            v.[id_pc],
            [ALTA_DATA].precio_prom_compra(v.[id_pc]), -- funcion ppc
            [ALTA_DATA].precio_prom_venta(v.[id_pc]), --  funcion ppv
-        from [BI_Sucursal] s
+        from [ALTA_DATA].[BI_Sucursal] s
     left join [BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
     left join [BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-    where  v.[id_pc] = c.[id_pc]
-    and month(v.[cod_fecha]) = month(c.[cod_fecha])
-    and year(v.[cod_fecha]) = year(c.[cod_fecha])  
+		where  v.[id_pc] = c.[id_pc]
+		and month(v.[cod_fecha]) = month(c.[cod_fecha])
+		and year(v.[cod_fecha]) = year(c.[cod_fecha])  
     group by 
 
 END;
@@ -536,7 +430,7 @@ begin
                 from [BI_Venta]   
                 where [id_pc] = @id_pc and
                       [cod_fecha] =  @mes
-                group by sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))
+                group by sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))  --de donde sacas ven_cantidad? no hay datos por enunciado
 END
 
 -- 4) Ganancias (precio de venta – precio de compra) x Sucursal x mes
@@ -544,9 +438,9 @@ END
 create view ganancia_sucursal_x_mes
 as 
     select s.[id_sucursal], month([cod_fecha]), sum(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
-    from BI_Sucursal s
-    left join [BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
+    from [ALTA_DATA].[BI_Sucursal] s
+    left join [ALTA_DATA].[BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
+    left join [ALTA_DATA].[BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
     where  v.[id_pc] = c.[id_pc]
     and month(v.[cod_fecha]) = month(c.[cod_fecha])
     and year(v.[cod_fecha]) = year(c.[cod_fecha])  
@@ -563,11 +457,11 @@ end
  create view promedio_tiempo_en_stock
 	as
 		select a.[id_accesorio], t.[anio], t.[mes], avg(datediff(month, isnull(v.[cod_fecha], 0), isnull(c.[cod_fecha], 0))) as promedio_tiempo_en_stock, 
-		from [BI_ACCESORIO] a
-        left join [BI_Venta] v on a.[id_accesorio] = v.[id_pc] 
-        left join [BI_Compra] c on a.[id_accesorio] = c.[id_pc]
-        join [BI_TIEMPO] t on t.[cod_fecha] = v.[cod_fecha] -- se hace asi el join, luego del left join?
-        join [BI_TIEMPO] t on t.[cod_fecha] = c.[cod_fecha]
+		from [ALTA_DATA].[BI_ACCESORIO] a
+        left join [ALTA_DATA].[BI_Venta] v on a.[id_accesorio] = v.[id_pc] 
+        left join [ALTA_DATA].[BI_Compra] c on a.[id_accesorio] = c.[id_pc]
+			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = v.[cod_fecha] 
+			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = c.[cod_fecha]
 		group by a.[id_accesorio], t.[anio], t.[mes]
 		order by v.[cod_fecha], c.[cod_fecha]
     END;
@@ -595,11 +489,11 @@ as
            [ALTA_DATA].precio_prom_compra(v.[id_accesorio]), -- funcion ppc
            [ALTA_DATA].precio_prom_venta(v.[id_accesorio]), --  funcion ppv
         from [BI_Sucursal] s
-    left join [BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-    where  v.[id_accesorio] = c.[id_accesorio]
-    and month(v.[cod_fecha]) = month(c.[cod_fecha])
-    and year(v.[cod_fecha]) = year(c.[cod_fecha])  
+    left join [ALTA_DATA].[BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
+    left join [ALTA_DATA].[BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
+		where  v.[id_accesorio] = c.[id_accesorio]
+		and month(v.[cod_fecha]) = month(c.[cod_fecha])
+		and year(v.[cod_fecha]) = year(c.[cod_fecha])  
     group by 
 
 END;
