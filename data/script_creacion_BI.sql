@@ -300,14 +300,12 @@ Como no hay codigos de fecha dejamos que se genere un id automaticamente
 		     [mes]
 		    ,[anio]
 			)
-		SELECT DISTINCT *
-		FROM (
+		SELECT DISTINCT (
 		    SELECT MONTH (c.com_fecha) as mes, year (c.com_fecha) as anio
 		    FROM [ALTA_DATA].[Compra] c
 		    UNION
 		    SELECT MONTH (f.fac_fecha) as mes, year (f.fac_fecha) as anio
-        	FROM [ALTA_DATA].[Factura] f
-        		)
+        	FROM [ALTA_DATA].[Factura] f )
 	END;
 
 -- Compra
@@ -357,14 +355,110 @@ Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta 
 	END;
 
 END;
+
 GO
 
-    CREATE FUNCTION compras_por_producto_por_sucursal_por_mes(@tipo_producto NVARCHAR (30))
-    RETURNS TABLE
-    AS
-        RETURN(
-        SELECT
-        )
+--1 Promedio de tiempo en stock de cada modelo de Pc.
+
+
+/* hay que ver como hacer el tema del tiempo en stock (restar fechas) */
+
+--2 Precio promedio de PCs, vendidos y comprados - PC
+
+CREATE VIEW precio_promedio_pc_compra_venta
+AS
+	SELECT v.id_pc,
+	 AVG(ISNULL(v.ven_precio,0))  AS promedio_precio_venta,
+     AVG(ISNULL(c.com_precio,0))  AS promedio_precio_compra
+	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c
+    GROUP BY v.id_pc
+GO
+
+
+/*El precio promedio de venta no se puede hacer por que no se cuenta con esa informacion desde Item Factura - Ventas */
+
+
+--3 Cantidad de PCs, vendidos y comprados x sucursal y mes - PC
+
+    CREATE VIEW cantidad_pc_compradas_por_sucursal_por_mes
+	AS
+	    DECLARE @codigopc NVARCHAR(50)
+		DECLARE @suc INTEGER
+		DECLARE @mes DECIMAL
+		SELECT c.id_pc, c.id_sucursal, t.mes,
+		SUM(com_cantidad) cantidad
+		FROM ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Tiempo t
+		WHERE c.id_pc= @codigopc
+		AND c.id_sucursal = @suc
+		AND t.mes = @mes
+GO
+
+--4 Ganancias (precio de venta – precio de compra) x Sucursal x mes - PC
+
+CREATE VIEW ganancia_por_sucursal_por_mes
+AS
+	DECLARE @suc INTEGER
+	DECLARE @mes DECIMAL
+	SELECT v.ven_precio, c.com_precio, s.id_sucursal, t.mes, (v.ven_precio - c.com_precio) ganancia
+	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Sucursal s, ALTA_DATA.BI_Tiempo t
+	WHERE c.id_sucursal = @suc
+		AND t.mes = @mes
+	RETURN ganancia
+GO
+
+
+
+----------------------------------------------------------------------------------------------------------------
+
+
+--1 Precio promedio, vendido y comprado - Accesorio
+
+CREATE VIEW precio_promedio_acc_compra_venta
+AS
+	SELECT v.id_accesorio,
+	 AVG(ISNULL(v.ven_precio,0))  AS promedio_precio_venta,
+     AVG(ISNULL(c.com_precio,0))  AS promedio_precio_compra
+	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c
+    GROUP BY v.id_accesorio
+GO
+
+/*El precio promedio de venta no se puede hacer por que no se cuenta con esa informacion desde Item Factura - Ventas */
+
+
+--2 Ganancias (precio de venta – precio de compra) x Sucursal x mes - Accesorio
+
+CREATE VIEW ganancia_por_sucursal_por_mes
+AS
+	DECLARE @suc INTEGER
+	DECLARE @mes DECIMAL
+	SELECT v.ven_precio, c.com_precio, s.id_sucursal, t.mes, (v.ven_precio - c.com_precio) ganancia
+	FROM ALTA_DATA.BI_Venta v, ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Sucursal s, ALTA_DATA.BI_Tiempo t
+	WHERE c.id_sucursal = @suc
+		AND t.mes = @mes
+	RETURN ganancia
+GO
+
+--3 Promedio de tiempo en stock de cada modelo - Accesorio
+
+
+/* hay que ver como hacer el tema del tiempo en stock (restar fechas) */
+
+
+--4 Máxima cantidad de stock por cada sucursal (anual)- Accesorio
+
+    CREATE VIEW max_cantidad_acc_por_sucursal_por_mes
+	AS
+		DECLARE @codigoacc NVARCHAR(50)
+		DECLARE @suc INTEGER
+		DECLARE @mes DECIMAL
+		SELECT c.id_accesorio, c.id_sucursal, t.mes,
+-- Hay que ver como hacer el tema del stock, Debido a que no hay ninguna entidad STOCK
+		FROM ALTA_DATA.BI_Compra c, ALTA_DATA.BI_Tiempo t
+		WHERE c.id_accesorio= @codigoacc
+		AND c.id_sucursal = @suc
+		AND t.mes = @mes
+GO
+
 
 
 -- BORRAR TODO: NO DESCOMENTAR
