@@ -403,7 +403,7 @@ AS
         ,AVG(c.[com_precio]) as 'Precio compra promedio'
 	FROM 
         [ALTA_DATA].[BI_Venta] v
-        ,[ALTA_DATA].[Bi_Compra] c
+       ,[ALTA_DATA].[Bi_Compra] c
     WHERE
         v.[id_pc] = c.[id_pc]
         AND v.[id_pc] IS NOT NULL
@@ -422,16 +422,16 @@ AS
         ,SUM(v.[ven_cantidad]) as Ventas
         ,SUM(c.[com_cantidad]) as Compras
     FROM    
-        [BI_Compra] c 
-        ,[BI_Venta] v 
-        ,[BI_Tiempo] t
+         [ALTA_DATA].[BI_Compra] c 
+        ,[ALTA_DATA].[BI_Venta] v 
+        ,[ALTA_DATA].[BI_Tiempo] t
 	WHERE  
         v.[id_pc] = c.[id_pc]
         AND v.[id_sucursal] = c.[id_sucursal]
 		AND t.[cod_fecha] = c.[cod_fecha]
 		and t.[cod_fecha] = v.[cod_fecha]
     GROUP BY 
-        v.[id_sucursal]
+         v.[id_sucursal]
         ,t.[fecha]
         ,v.[id_pc]
 GO
@@ -445,7 +445,7 @@ AS
         ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
         ,SUM(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
     FROM 
-        [ALTA_DATA].[BI_Compra] c 
+         [ALTA_DATA].[BI_Compra] c 
         ,[ALTA_DATA].[BI_Venta] v
         ,[ALTA_DATA].[BI_Tiempo] t
     WHERE 
@@ -493,7 +493,7 @@ AS
         ,AVG(c.[com_precio]) as 'Precio compra promedio'
 	FROM 
         [ALTA_DATA].[BI_Venta] v
-        ,[ALTA_DATA].[Bi_Compra] c
+       ,[ALTA_DATA].[Bi_Compra] c
     WHERE
         v.[id_accesorio] = c.[id_accesorio]
         AND v.[id_accesorio] IS NOT NULL
@@ -512,7 +512,7 @@ AS
         ,SUM(v.[ven_cantidad]) AS Ventas
         ,SUM(c.[com_cantidad]) AS Compras
     FROM    
-        [ALTA_DATA].[BI_Compra] c 
+         [ALTA_DATA].[BI_Compra] c 
         ,[ALTA_DATA].[BI_Venta] v 
         ,[ALTA_DATA].[BI_Tiempo] t
 	WHERE  
@@ -534,7 +534,7 @@ AS
         ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
         ,SUM(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
     FROM 
-        [ALTA_DATA].[BI_Compra] c 
+         [ALTA_DATA].[BI_Compra] c 
         ,[ALTA_DATA].[BI_Venta] v
         ,[ALTA_DATA].[BI_Tiempo] t
     WHERE 
