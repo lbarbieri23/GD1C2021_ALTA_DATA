@@ -12,7 +12,7 @@ BEGIN
 	  [mr_capacidad] NVARCHAR(255),
 	  [mr_velocidad] NVARCHAR(255),
 	  [mr_fabricante] NVARCHAR(255)
-	);
+	)
 
 	CREATE TABLE [ALTA_DATA].[Microprocesador] (
 	  [id_microprocesador] NVARCHAR(50) PRIMARY KEY,

@@ -1,4 +1,4 @@
-
+USE GD1C2021;
 GO
 
 BEGIN
@@ -29,12 +29,12 @@ BEGIN
     	);
 
   	CREATE TABLE [ALTA_DATA].[BI_Motherboard] (
-    	  [id_motherboard] INTEGER IDENTITY(1,1) PRIMARY KEY,
+    	  [id_motherboard] INTEGER PRIMARY KEY,
     	  [mb_fabricante] NVARCHAR(255)
     	);
 
     CREATE TABLE [ALTA_DATA].[BI_Placa_Video] (
-    	  [id_placa_video] INTEGER IDENTITY(1,1) PRIMARY KEY,
+    	  [id_placa_video] INTEGER PRIMARY KEY,
     	  [pv_chipset] NVARCHAR(50),
     	  [pv_modelo] NVARCHAR(50),
     	  [pv_velocidad] NVARCHAR(255),
@@ -65,7 +65,7 @@ BEGIN
 -- Sucursales
 
 	CREATE TABLE [ALTA_DATA].[BI_Sucursal] (
-      [id_sucursal] INTEGER IDENTITY(1,1) PRIMARY KEY,
+      [id_sucursal] INTEGER PRIMARY KEY,
       [suc_direccion] NVARCHAR (255),
       [suc_mail] NVARCHAR (255),
       [suc_telefono] DECIMAL
@@ -74,9 +74,16 @@ BEGIN
 -- Clientes
 
 	CREATE TABLE [ALTA_DATA].[BI_Cliente] (
-	[id_cliente] INTEGER IDENTITY(1,1) PRIMARY KEY,
+	[id_cliente] INTEGER PRIMARY KEY,
     [cli_fecha_nacimiento] DATETIME2,
     [cli_sexo] CHAR NULL
+	);
+
+-- Tiempo
+
+	CREATE TABLE [ALTA_DATA].[BI_Tiempo] (
+	      [cod_fecha] INTEGER IDENTITY(1,1) PRIMARY KEY,
+    	  [fecha] DATETIME2
 	);
 
 -- Compras
@@ -86,11 +93,10 @@ BEGIN
      [com_fecha] DATETIME2,
      [com_precio] DECIMAL,
      [com_cantidad] DECIMAL,
-     [cod_fecha] INTEGER,
-     [id_pc] NVARCHAR(50),
-     [id_accesorio] DECIMAL,
-     [id_sucursal] INTEGER,
-     [id_cliente] INTEGER
+     [cod_fecha] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Tiempo](cod_fecha),
+     [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_PC](id_pc),
+     [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Accesorio](id_accesorio),
+     [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Sucursal](id_sucursal),
      );
 
 -- Ventas
@@ -100,20 +106,13 @@ BEGIN
 	[ven_fecha] DATETIME2,
 	[ven_precio] DECIMAL,
 	[ven_cantidad] DECIMAL,
-	[cod_fecha] INTEGER,
-	[id_pc] NVARCHAR(50),
-	[id_accesorio] DECIMAL,
-	[id_sucursal] INTEGER,
-	[id_cliente] INTEGER
+    [cod_fecha] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Tiempo](cod_fecha),
+    [id_pc] NVARCHAR(50) FOREIGN KEY REFERENCES [ALTA_DATA].[BI_PC](id_pc),
+    [id_accesorio] DECIMAL FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Accesorio](id_accesorio),
+    [id_sucursal] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Sucursal](id_sucursal),
+	[id_cliente] INTEGER FOREIGN KEY REFERENCES [ALTA_DATA].[BI_Cliente](id_cliente)
 	);
 
--- Tiempo
-
-	CREATE TABLE [ALTA_DATA].[BI_Tiempo] (
-	      [cod_fecha] INTEGER IDENTITY(1,1) PRIMARY KEY,
-    	  [mes] DECIMAL,
-    	  [anio] DECIMAL,
-	);
 
 END;
 
@@ -139,7 +138,6 @@ BEGIN
     		,m.[mr_velocidad]
     		,m.[mr_fabricante]
 		FROM [ALTA_DATA].[Memoria_Ram] m
-			WHERE m.[id_memoria_ram] IS NOT NULL;
 
 	END;
 
@@ -159,7 +157,6 @@ BEGIN
              ,m.[mic_velocidad]
              ,m.[mic_fabricante]
 		FROM [ALTA_DATA].[Microprocesador] m
-			WHERE m.[id_microprocesador] IS NOT NULL;
 	END;
 
 -- Disco Rigido
@@ -172,19 +169,25 @@ BEGIN
 			  ,[dr_velocidad]
 			)
 		SELECT DISTINCT
-			   m.[id_disco_rigido]
+			  m.[id_disco_rigido]
               ,m.[dr_tipo]
               ,m.[dr_capacidad]
               ,m.[dr_fabricante]
               ,m.[dr_velocidad]
 		FROM [ALTA_DATA].[Disco_Rigido] m
-			WHERE  m.[id_disco_rigido] IS NOT NULL;
 	END;
 
 -- Motherboard
-/*
-No hay datos de las motherboards en el modelo inicial
-*/
+	BEGIN
+		INSERT INTO [ALTA_DATA].[BI_Motherboard] (
+			   [id_motherboard]
+    	       ,[mb_fabricante]
+			)
+		SELECT DISTINCT
+			   m.[id_motherboard]
+              ,m.[mb_fabricante]
+		FROM [ALTA_DATA].[Motherboard] m
+	END;
 
 -- Placa de video
 /*
@@ -192,24 +195,21 @@ Como no hay codigos de las placas de video dejamos que se genere un id automatic
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Placa_Video] (
-			  [pv_chipset]
+              [id_placa_video]
+			  ,[pv_chipset]
 			  ,[pv_modelo]
 			  ,[pv_velocidad]
 			  ,[pv_capacidad]
 			  ,[pv_fabricante]
 			)
 		SELECT DISTINCT
-			   m.[pv_chipset]
+              m.[id_placa_video]
+			  ,m.[pv_chipset]
 			  ,m.[pv_modelo]
 			  ,m.[pv_velocidad]
 			  ,m.[pv_capacidad]
 			  ,m.[pv_fabricante]
 		FROM [ALTA_DATA].[Placa_Video] m
-			WHERE m.[pv_chipset]IS NOT NULL
-				OR m.[pv_modelo] IS NOT NULL
-				OR m.[pv_velocidad]IS NOT NULL
-				OR m.[pv_capacidad] IS NOT NULL
-				OR m.[pv_fabricante] IS NOT NULL;
 	END;
 
 -- PC
@@ -232,7 +232,7 @@ Como no hay codigos de las placas de video dejamos que se genere un id automatic
             ,m.[id_memoria_ram]
             ,m.[id_microprocesador]
             ,m.[id_placa_video]
-			,NULL
+			,m.[id_motherboard]
 			,m.[pc_alto]
             ,m.[pc_ancho]
             ,m.[pc_profundidad]
@@ -252,7 +252,6 @@ La tabla Accesorio del modelo de creacion inicial no cuenta con el fabricante
 			 m.[id_accesorio]
             ,m.[acc_descripcion]
 		FROM [ALTA_DATA].[Accesorios] m
-			WHERE m.[id_accesorio] IS NOT NULL;
 
 	END;
 
@@ -262,50 +261,47 @@ Como no hay codigos de las sucursales, dejamos que se genere un id automaticamen
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Sucursal](
-			 [suc_direccion]
+            [id_sucursal]
+			,[suc_direccion]
 			,[suc_mail]
 			,[suc_telefono]
 			)
 		SELECT DISTINCT
-			 m.[suc_direccion]
+            m.[id_sucursal]
+			,m.[suc_direccion]
 			,m.[suc_mail]
 			,m.[suc_telefono]
 		FROM [ALTA_DATA].[Sucursal] m
-			 WHERE m.[suc_direccion] IS NOT NULL
-				OR m.[suc_mail] IS NOT NULL
-				OR m.[suc_telefono] IS NOT NULL;
 	END;
 
 -- Cliente
-/*
-Como no hay codigos de los clientes dejamos que se genere un id automaticamente, ademas falta el sexo del cliente en la
-tabla cliente del modelo inicial
-*/
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Cliente](
-			[cli_fecha_nacimiento]
+            [id_cliente]
+			,[cli_fecha_nacimiento]
+	        ,[cli_sexo]
 			)
 		SELECT DISTINCT
-			m.[cli_fecha_nacimiento]
+            m.[id_cliente]
+			,m.[cli_fecha_nacimiento]
+            ,m.[cli_sexo]
 		FROM [ALTA_DATA].[Cliente] m
-			WHERE m.[cli_fecha_nacimiento] IS NOT NULL;
 	END;
 
 -- Tiempo
 /*
 Como no hay codigos de fecha dejamos que se genere un id automaticamente
+Se guardan todas las fechas como el ultimo dia del mes para poder usar la funciones del tipo DATETIME2
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Tiempo](
-		     [mes]
-		    ,[anio]
-			)
-		SELECT DISTINCT (
-		    SELECT MONTH (c.com_fecha) as mes, year (c.com_fecha) as anio
-		    FROM [ALTA_DATA].[Compra] c
-		    UNION
-		    SELECT MONTH (f.fac_fecha) as mes, year (f.fac_fecha) as anio
-        	FROM [ALTA_DATA].[Factura] f )
+		    [fecha]
+        )
+		SELECT DISTINCT EOMONTH(c.com_fecha) 
+		FROM [ALTA_DATA].[Compra] c
+		UNION
+		SELECT EOMONTH(f.fac_fecha) 
+        FROM [ALTA_DATA].[Factura] f 
 	END;
 
 -- Compra
@@ -320,22 +316,28 @@ Como no hay codigos de compra, dejamos que se genere un id automaticamente
 			,[id_pc]
 			,[id_accesorio]
 			,[id_sucursal]
-			,[id_cliente]
+            ,[cod_fecha]
 			)
 		SELECT DISTINCT
 		    m.[com_fecha]
 		   ,i.[itemc_precio]
 		   ,i.[itemc_cantidad]
-		   ,p.[id_pc]
-		   ,a.[id_accesorio]
-		   ,s.[id_sucursal]
-		   ,c.[id_cliente]
-		FROM [ALTA_DATA].[Compra] m,[ALTA_DATA].[Item_compra] i, [ALTA_DATA].[PC] p , [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
+		   ,i.[id_pc]
+		   ,i.[id_accesorio]
+		   ,m.[id_sucursal]
+           ,t.[cod_fecha]
+		FROM
+            [ALTA_DATA].[Compra] m
+            ,[ALTA_DATA].[Item_compra] i
+            ,[ALTA_DATA].[BI_Tiempo] t
+        WHERE 
+            i.[id_compra] = m.[id_compra]
+            AND t.[fecha] = EOMONTH(m.[com_fecha])
 	END;
 
 -- Ventas
 /*
-Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta tambien el precio y la cantidad que no estan en item factura del modelo inciial
+Como no hay codigo de ventas dejamos que se genere un id automaticamente
 */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Venta](
@@ -344,14 +346,25 @@ Como no hay codigo de ventas dejamos que se genere un id automaticamente, falta 
             ,[id_accesorio]
             ,[id_sucursal]
             ,[id_cliente]
+            ,[cod_fecha]
+            ,[ven_cantidad]
+            ,[ven_precio]
 			)
 		SELECT DISTINCT
 			 m.[fac_fecha]
-		    ,p.[id_pc]
-            ,a.[id_accesorio]
-            ,s.[id_sucursal]
-            ,c.[id_cliente]
-		FROM [ALTA_DATA].[Factura] m, [ALTA_DATA].[PC] p, [ALTA_DATA].[Accesorios] a, [ALTA_DATA].[Sucursal] s, [ALTA_DATA].[Cliente] c
+		    ,i.[id_pc]
+            ,i.[id_accesorio]
+            ,m.[id_sucursal]
+            ,m.[id_cliente]
+            ,t.[cod_fecha]
+            ,i.[itemf_cantidad]
+            ,i.[itemf_precio]
+		FROM [ALTA_DATA].[Factura] m
+            ,[ALTA_DATA].[Item_factura] i
+            ,[ALTA_DATA].[BI_Tiempo] t
+        WHERE
+            i.[id_factura] = m.[id_factura]
+            AND t.[fecha] = EOMONTH(m.[fac_fecha])
 	END;
 
 END;
@@ -363,89 +376,96 @@ GO
 -- VISTAS
 
 -- 1) promedio de tiempo en stock de cada modelo de pc
--- como en cada factura no se especifica la cantidad, se asume que se venden de a una unidad. Como en las cantidades de compra en todas las filas es 1 tambien se asume lo mismo.
- create view promedio_tiempo_en_stock
-	as
-		select p.[id_pc], t.[anio], t.[mes], avg(datediff(month, isnull(v.[cod_fecha], 0), isnull(c.[cod_fecha], 0))) as promedio_tiempo_en_stock, 
-		from [ALTA_DATA].[BI_PC] p, [ALTA_DATA].[BI_Venta] v, [ALTA_DATA].[BI_Compra] c
-        left join [ALTA_DATA].[BI_Venta] v on p.[id_pc] = v.[id_pc] 
-        left join [ALTA_DATA].[BI_Compra] c on p.[id_pc] = c.[id_pc]
-			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = v.[cod_fecha] 
-			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = c.[cod_fecha]
-		group by p.[id_pc], t.[anio], t.[mes]
-		order by v.[cod_fecha], c.[cod_fecha]
-    END;
-    GO
+/*
+Se calcula el promedio de tiempo en stock de un producto como los dias del mes dividido la cantidad de ventas
+*/
+CREATE VIEW [ALTA_DATA].[pc_promedio_tiempo_en_stock]
+AS
+    SELECT 
+        p.[id_pc]
+        ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
+        ,DAY(EOMONTH(t.[fecha])) / SUM(v.[ven_cantidad]) as 'Promedio de tiempo en stock'
+    FROM 
+        [ALTA_DATA].[BI_PC] p
+        ,[ALTA_DATA].[BI_Venta] v
+        ,[ALTA_DATA].[BI_Compra] c
+        ,[ALTA_DATA].[BI_Tiempo] t 
+    WHERE
+        p.[id_pc] = v.[id_pc] 
+        AND p.[id_pc] = c.[id_pc]
+        AND t.[cod_fecha] = v.[cod_fecha] 
+        AND t.[cod_fecha] = c.[cod_fecha]
+        AND p.[id_pc] IS NOT NULL -- Los accesorios tiene id_pc en NULL
+    GROUP BY 
+        p.[id_pc]
+        ,t.[fecha]
+
+GO
+
 
 --2)  Precio promedio de PCs, vendidos y comprados.
 
-create view precio_promedio_Pc_compra_venta 
-as 
-	select v.[id_pc],
-     sum(ISNULL(v.[ven_precio],0) / count(ISNULL(v.[ven_precio], 1) ) as promedio_precio_venta
-     sum(ISNULL(v.[com_precio],0) / count(ISNULL(v.[com_precio], 1) ) as promedio_precio_compra
-	from [ALTA_DATA][BI_Venta] v
-    group by v.[id_pc]
-END;
+CREATE VIEW [ALTA_DATA].[pc_precio_promedio_compra_venta]
+AS 
+    SELECT 
+        v.[id_pc]
+        ,AVG(v.[ven_precio]) as 'Precio venta promedio'
+        ,AVG(c.[com_precio]) as 'Precio compra promedio'
+	FROM 
+        [ALTA_DATA].[BI_Venta] v
+        ,[ALTA_DATA].[Bi_Compra] c
+    WHERE
+        v.[id_pc] = c.[id_pc]
+        AND v.[id_pc] IS NOT NULL
+    GROUP BY 
+        v.[id_pc]
 GO
 
 -- 3) Cantidad de PCs, vendidos y comprados x sucursal y mes
 
-create view precio_promedio_Pc_compra_venta 
-as 
-    select s.[id_sucursal],
-           MONTH(v.[id_venta]),
-           v.[id_pc],
-           [ALTA_DATA].precio_prom_compra(v.[id_pc]), -- funcion ppc
-           [ALTA_DATA].precio_prom_venta(v.[id_pc]), --  funcion ppv
-        from [ALTA_DATA].[BI_Sucursal] s
-    left join [BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-		where  v.[id_pc] = c.[id_pc]
-		and month(v.[cod_fecha]) = month(c.[cod_fecha])
-		and year(v.[cod_fecha]) = year(c.[cod_fecha])  
-    group by 
-
-END;
+CREATE VIEW [ALTA_DATA].[pc_cantidad_compra_venta]
+AS 
+    SELECT 
+        v.[id_sucursal]
+        ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
+        ,v.[id_pc]
+        ,SUM(v.[ven_cantidad]) as Ventas
+        ,SUM(c.[com_cantidad]) as Compras
+    FROM    
+        [BI_Compra] c 
+        ,[BI_Venta] v 
+        ,[BI_Tiempo] t
+	WHERE  
+        v.[id_pc] = c.[id_pc]
+        AND v.[id_sucursal] = c.[id_sucursal]
+		AND t.[cod_fecha] = c.[cod_fecha]
+		and t.[cod_fecha] = v.[cod_fecha]
+    GROUP BY 
+        v.[id_sucursal]
+        ,t.[fecha]
+        ,v.[id_pc]
 GO
-
--- ppc: contempla las cantidades. no es lo mismo comprar 400 notebooks a 10 pesos y luego 1 notebook a $100. El promedio no es $55
-create function precio_prom_compra (@id_pc NVARCHAR(50))
-returns decimal(12,2)
-as 
-begin 
-    return select top 1 sum([com_cantidad] * [com_precio]) / sum([com_cantidad])
-                from [BI_Compra]   
-                where [id_pc] = @id_pc and
-                      [cod_fecha] =  @mes
-                group by sum([com_cantidad] * [com_precio]) / sum([com_cantidad])
-END
-
---ppv: contempla las cantidades
-create function precio_prom_venta(@id_pc NVARCHAR(50), @mes NVARCHAR(10))
-returns decimal(12,2)
-as 
-begin 
-    return select top 1 sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))
-                from [BI_Venta]   
-                where [id_pc] = @id_pc and
-                      [cod_fecha] =  @mes
-                group by sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))  --de donde sacas ven_cantidad? no hay datos por enunciado
-END
 
 -- 4) Ganancias (precio de venta – precio de compra) x Sucursal x mes
 
-create view ganancia_sucursal_x_mes
-as 
-    select s.[id_sucursal], month([cod_fecha]), sum(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
-    from [ALTA_DATA].[BI_Sucursal] s
-    left join [ALTA_DATA].[BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [ALTA_DATA].[BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-    where  v.[id_pc] = c.[id_pc]
-    and month(v.[cod_fecha]) = month(c.[cod_fecha])
-    and year(v.[cod_fecha]) = year(c.[cod_fecha])  
-    group by  s.[id_sucursal], month([cod_fecha])
-end
+CREATE VIEW [ALTA_DATA].[pc_ganancias]
+AS 
+    SELECT 
+        v.[id_sucursal]
+        ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
+        ,SUM(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
+    FROM 
+        [ALTA_DATA].[BI_Compra] c 
+        ,[ALTA_DATA].[BI_Venta] v
+        ,[ALTA_DATA].[BI_Tiempo] t
+    WHERE 
+        v.[id_pc] = c.[id_pc]
+        AND v.[cod_fecha] = c.[cod_fecha]
+        AND v.[cod_fecha] = t.[cod_fecha]
+    GROUP BY 
+        v.[id_sucursal],
+        t.[fecha]
+GO
 
 
 
@@ -454,89 +474,87 @@ end
 
 -- 5) promedio de tiempo en stock de cada modelo de ACCESORIO
 -- como en cada factura no se especifica la cantidad, se asume que se venden de a una unidad. Como en las cantidades de compra en todas las filas es 1 tambien se asume lo mismo.
- create view promedio_tiempo_en_stock
-	as
-		select a.[id_accesorio], t.[anio], t.[mes], avg(datediff(month, isnull(v.[cod_fecha], 0), isnull(c.[cod_fecha], 0))) as promedio_tiempo_en_stock, 
-		from [ALTA_DATA].[BI_ACCESORIO] a
-        left join [ALTA_DATA].[BI_Venta] v on a.[id_accesorio] = v.[id_pc] 
-        left join [ALTA_DATA].[BI_Compra] c on a.[id_accesorio] = c.[id_pc]
-			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = v.[cod_fecha] 
-			join [ALTA_DATA].[BI_Tiempo] t on t.[cod_fecha] = c.[cod_fecha]
-		group by a.[id_accesorio], t.[anio], t.[mes]
-		order by v.[cod_fecha], c.[cod_fecha]
-    END;
-    GO
+CREATE VIEW [ALTA_DATA].[acc_promedio_tiempo_en_stock]
+AS
+		SELECT 
+            v.[id_accesorio]
+            ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
+            ,DAY(EOMONTH(t.[fecha])) / SUM(v.[ven_cantidad]) as 'Promedio de tiempo en stock'
+        FROM
+            [ALTA_DATA].[BI_Venta] v 
+			,[ALTA_DATA].[BI_Tiempo] t 
+        WHERE 
+            t.[cod_fecha] = v.[cod_fecha] 
+            AND v.[id_accesorio] IS NOT NULL
+		GROUP BY 
+            v.[id_accesorio]
+            ,t.[fecha]
+
+GO
 
 --6)  Precio promedio de accesorios, vendidos y comprados.
 
-create view precio_promedio_accesorio_compra_venta 
-as 
-	select v.[id_accesorio],
-     sum(ISNULL(v.[ven_precio],0) / count(ISNULL(v.[ven_precio], 1) ) as promedio_precio_venta
-     sum(ISNULL(v.[com_precio],0) / count(ISNULL(v.[com_precio], 1) ) as promedio_precio_compra
-	from [BI_Ventas_PC] v
-    group by v.[id_accesorio]
-END;
-GO
 
+CREATE VIEW [ALTA_DATA].[acc_precio_promedio_compra_venta]
+AS 
+    SELECT 
+        v.[id_accesorio]
+        ,AVG(v.[ven_precio]) as 'Precio venta promedio'
+        ,AVG(c.[com_precio]) as 'Precio compra promedio'
+	FROM 
+        [ALTA_DATA].[BI_Venta] v
+        ,[ALTA_DATA].[Bi_Compra] c
+    WHERE
+        v.[id_accesorio] = c.[id_accesorio]
+        AND v.[id_accesorio] IS NOT NULL
+    GROUP BY 
+        v.[id_accesorio]
+
+GO
 -- 7) Cantidad de accesorios, vendidos y comprados x sucursal y mes
 
-create view precio_promedio_accesorio_compra_venta 
-as 
-    select s.[id_sucursal],
-           MONTH(v.[id_venta]),
-           v.[id_accesorio],
-           [ALTA_DATA].precio_prom_compra(v.[id_accesorio]), -- funcion ppc
-           [ALTA_DATA].precio_prom_venta(v.[id_accesorio]), --  funcion ppv
-        from [BI_Sucursal] s
-    left join [ALTA_DATA].[BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [ALTA_DATA].[BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-		where  v.[id_accesorio] = c.[id_accesorio]
-		and month(v.[cod_fecha]) = month(c.[cod_fecha])
-		and year(v.[cod_fecha]) = year(c.[cod_fecha])  
-    group by 
-
-END;
+CREATE VIEW [ALTA_DATA].[acc_cantidad_compra_venta]
+AS 
+    SELECT 
+        v.[id_sucursal]
+        ,FORMAT(t.[fecha], 'MM-yyyy') AS Periodo
+        ,v.[id_accesorio]
+        ,SUM(v.[ven_cantidad]) AS Ventas
+        ,SUM(c.[com_cantidad]) AS Compras
+    FROM    
+        [ALTA_DATA].[BI_Compra] c 
+        ,[ALTA_DATA].[BI_Venta] v 
+        ,[ALTA_DATA].[BI_Tiempo] t
+	WHERE  
+        v.[id_accesorio] = c.[id_accesorio]
+        AND v.[id_sucursal] = c.[id_sucursal]
+		AND t.[cod_fecha] = c.[cod_fecha]
+		and t.[cod_fecha] = v.[cod_fecha]
+    GROUP BY 
+        v.[id_sucursal]
+        ,t.[fecha]
+        ,v.[id_accesorio]
 GO
 
--- ppc: contempla las cantidades. no es lo mismo comprar 400 accesorios a 10 pesos y luego 1 accesorio a $100. El promedio no es $55
-create function precio_prom_compra (@id_accesorio NVARCHAR(50))
-returns decimal(12,2)
-as 
-begin 
-    return select top 1 sum([com_cantidad] * [com_precio]) / sum([com_cantidad])
-                from [BI_Compra]   
-                where [id_accesorio] = @id_accesorio and
-                      [cod_fecha] =  @mes
-                group by sum([com_cantidad] * [com_precio]) / sum([com_cantidad])
-END
-
---ppv: contempla las cantidades
-create function precio_prom_venta(@id_accesorio NVARCHAR(50), @mes NVARCHAR(10))
-returns decimal(12,2)
-as 
-begin 
-    return select top 1 sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))
-                from [BI_Venta]   
-                where [id_accesorio] = @id_accesorio and
-                      [cod_fecha] =  @mes
-                group by sum([ven_cantidad] * [ven_precio]) / sum([ven_cantidad]))
-END
-
 -- 8) Ganancias (precio de venta – precio de compra) x Sucursal x mes
-
-create view ganancia_sucursal_x_mes
-as 
-    select s.[id_sucursal], month([cod_fecha]), sum(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.[com_precio]) as ganancias
-    from BI_Sucursal s
-    left join [BI_Compra] c on s.[id_sucursal] = c.[id_sucursal]
-    left join [BI_Venta] c on s.[id_sucursal] = v.[id_sucursal] 
-    where  v.[id_accesorio] = c.[id_accesorio]
-    and month(v.[cod_fecha]) = month(c.[cod_fecha])
-    and year(v.[cod_fecha]) = year(c.[cod_fecha])  
-    group by  s.[id_sucursal], month([cod_fecha])
-end
-
+CREATE VIEW [ALTA_DATA].[acc_ganancias]
+AS 
+    SELECT 
+        v.[id_sucursal]
+        ,FORMAT(t.[fecha], 'MM-yyyy') as Periodo
+        ,SUM(v.[ven_cantidad] * v.[ven_precio]) - sum(c.[com_cantidad] * c.com_precio) as ganancias
+    FROM 
+        [ALTA_DATA].[BI_Compra] c 
+        ,[ALTA_DATA].[BI_Venta] v
+        ,[ALTA_DATA].[BI_Tiempo] t
+    WHERE 
+        v.[id_accesorio] = c.[id_accesorio]
+        AND v.[cod_fecha] = c.[cod_fecha]
+        AND v.[cod_fecha] = t.[cod_fecha]
+    GROUP BY 
+        v.[id_sucursal],
+        t.[fecha]
+GO
 
 -- BORRAR TODO: NO DESCOMENTAR
 /*
@@ -544,18 +562,26 @@ end
 /*
 GO
 BEGIN
+DROP TABLE [ALTA_DATA].[BI_Compra];
+DROP TABLE [ALTA_DATA].[BI_Venta];
+DROP TABLE [ALTA_DATA].[BI_Tiempo];
+DROP TABLE [ALTA_DATA].[BI_Sucursal];
+DROP TABLE [ALTA_DATA].[BI_Cliente];
+DROP TABLE [ALTA_DATA].[BI_PC];
+DROP TABLE [ALTA_DATA].[BI_Accesorio];
 DROP TABLE [ALTA_DATA].[BI_Memoria_Ram];
 DROP TABLE [ALTA_DATA].[BI_Microprocesador];
 DROP TABLE [ALTA_DATA].[BI_Disco_Rigido];
 DROP TABLE [ALTA_DATA].[BI_Motherboard];
 DROP TABLE [ALTA_DATA].[BI_Placa_Video];
-DROP TABLE [ALTA_DATA].[BI_PC];
-DROP TABLE [ALTA_DATA].[BI_Accesorio];
-DROP TABLE [ALTA_DATA].[BI_Sucursal];
-DROP TABLE [ALTA_DATA].[BI_Cliente];
-DROP TABLE [ALTA_DATA].[BI_Compra];
-DROP TABLE [ALTA_DATA].[BI_Venta];
-DROP TABLE [ALTA_DATA].[BI_Tiempo];
+DROP VIEW [ALTA_DATA].[pc_promedio_tiempo_en_stock];
+DROP VIEW [ALTA_DATA].[pc_precio_promedio_compra_venta];
+DROP VIEW [ALTA_DATA].[pc_cantidad_compra_venta];
+DROP VIEW [ALTA_DATA].[pc_ganancias];
+DROP VIEW [ALTA_DATA].[acc_promedio_tiempo_en_stock];
+DROP VIEW [ALTA_DATA].[acc_precio_promedio_compra_venta];
+DROP VIEW [ALTA_DATA].[acc_cantidad_compra_venta];
+DROP VIEW [ALTA_DATA].[acc_ganancias];
 END
 DROP SCHEMA [ALTA_DATA];
 */
