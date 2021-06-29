@@ -190,9 +190,6 @@ BEGIN
 	END;
 
 -- Placa de video
-/*
-Como no hay codigos de las placas de video dejamos que se genere un id automaticamente
-*/
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Placa_Video] (
               [id_placa_video]
@@ -213,7 +210,6 @@ Como no hay codigos de las placas de video dejamos que se genere un id automatic
 	END;
 
 -- PC
-/* No hay datos de las motherboards asi que por ahora va a quedar en NULL este campo */
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_PC] (
 			   [id_pc]
@@ -240,9 +236,6 @@ Como no hay codigos de las placas de video dejamos que se genere un id automatic
 	END;
 
 -- Accesorios
-/*
-La tabla Accesorio del modelo de creacion inicial no cuenta con el fabricante
-*/
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Accesorio](
 			 [id_accesorio]
@@ -256,9 +249,6 @@ La tabla Accesorio del modelo de creacion inicial no cuenta con el fabricante
 	END;
 
 -- Sucursal
-/*
-Como no hay codigos de las sucursales, dejamos que se genere un id automaticamente
-*/
 	BEGIN
 		INSERT INTO [ALTA_DATA].[BI_Sucursal](
             [id_sucursal]
@@ -377,7 +367,7 @@ GO
 
 -- 1) promedio de tiempo en stock de cada modelo de pc
 /*
-Se calcula el promedio de tiempo en stock de un producto como los dias del mes dividido la cantidad de ventas
+Se calcula el promedio de tiempo en stock de un producto como los dias del mes dividido la cantidad de ventas. De esta manera se obtiene cada cuantos dias se hace una venta de cada producto
 */
 CREATE VIEW [ALTA_DATA].[pc_promedio_tiempo_en_stock]
 AS
